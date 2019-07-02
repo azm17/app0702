@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+<meta name="viewport"
+      content="width=450,
+      height=480,
+      initial-scale=1.0,
+      minimum-scale=1.0,
+      maximum-scale=2.0,
+      user-scalable=yes" />
+  <meta charset="utf-8">
+<title>{{ title }}</title>
+</head>
+<body>
+{% block content %}
+<!-- ここにメインコンテンツを書く -->
+{% endblock %}
+</body>
+<body>
+	<form action="http://192.168.2.102:50000/show" method="post">
+		<table>
+			<tr><td>username</td><td><input type="text" name="user"></td></tr>
+			<tr><td>password</td><td><input type="password" name="pass"></td></tr>
+		</table>
+		<input type="submit" value="結果をみる" value="button1">
+	</form>
+    <script type="text/javascript" src="login.js"></script>
+</body>
+<body>
+	<form action="http://192.168.2.102:50000/enter" method="post">
+		<table>
+			<tr><td>username</td><td><input type="text" name="user"></td></tr>
+			<tr><td>password</td><td><input type="password" name="pass"></td></tr>
+			<tr><td>運動前体重(kg)</td><td><input type="text" name="wa"></td></tr>
+			<tr><td>運動後体重(kg)</td><td><input type="text" name="wb"></td></tr>
+			<tr><td>トレーニング内容</td><td><input type="text" name="text"></td></tr>
+			<tr><td>運動時間(h)</td><td><input type="text" name="time"></td></tr>
+			<tr><td>飲水量（L）</td><td><input type="text" name="moi"></td></tr>
+			<tr><td>天気(1,2,3)</td><td><input type="text" name="tenki"></td></tr>
+			<tr><td>湿度（％）</td><td><input type="text" name="sitsu"></td></tr>
+		</table>
+		<input type="submit" value="送信" value="button1">
+	</form>
+    <script type="text/javascript" src="login.js"></script>
+</body>
+</html>
