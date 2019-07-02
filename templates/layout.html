@@ -17,7 +17,7 @@
 {% endblock %}
 </body>
 <body>
-	<form action="http://192.168.2.102:50000/show" method="post">
+	<form action="http://{{serverhost}}:{{serverport}}/show" method="post">
 		<table>
 			<tr><td>username</td><td><input type="text" name="user"></td></tr>
 			<tr><td>password</td><td><input type="password" name="pass"></td></tr>
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="login.js"></script>
 </body>
 <body>
-	<form action="http://192.168.2.102:50000/enter" method="post">
+	<form action="http://{{serverhost}}:{{serverport}}/enter" method="post">
 		<table>
 			<tr><td>username</td><td><input type="text" name="user"></td></tr>
 			<tr><td>password</td><td><input type="password" name="pass"></td></tr>

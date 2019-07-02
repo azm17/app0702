@@ -8,23 +8,23 @@ pip3 install flask
 pip3 install mysql-connector-python
 """
 from flask import Flask,request,render_template
-import my_function2 as my_func
+import my_function2_demo as my_func
 
 app = Flask(__name__)
 #server host
-server_host='192.168.2.102'
+server_host='192.168.0.12'
 server_port=50000
 #SQL server
-SQLserver_host='192.168.2.107'
+SQLserver_host='192.168.0.32'
 SQLserver_port=3306
 database_name='hydration_db'
 
 @app.route("/")
 def entry():
-    html = render_template('index.html')
+    html = render_template('index.html',serverhost=server_host,serverport=server_port)
     return html
 
-@app.route("/hello", methods=["POST"])
+@app.route("/hello", methods=["GET","POST"])
 def hello():
     userid = request.form['user']
     userpass = request.form['pass']
@@ -36,7 +36,7 @@ def hello():
         hantei=False
     print(hantei)
     if hantei:
-        return render_template('hello.html', title='flask test', name=userid)# lonin success
+        return render_template('hello.html', title='flask test', name=userid,serverhost=server_host,serverport=server_port)# lonin success
     else:
         return 'either id or pass is not match'# login fail
 
@@ -60,17 +60,16 @@ def show():
               'period' : str(d[7])
             })
         print('Success')
-        return render_template('result.html', title='My Title', user=userid, posts=posts)
+        return render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_host,serverport=server_port)
     except:
         print('Fail')
         return 'NG'
 
 #@app.route("/entry", methods=["POST"])
-@app.route("/enter", methods=["POST"])
+@app.route("/enter", methods=["GET","POST"])
 def enter():
     userid = request.form['user']
     userpass = request.form['pass']
-    
     try:
         weight_after= float(request.form['wa'])
         weight_before= float(request.form['wb'])
@@ -108,7 +107,7 @@ def admin_entry():
 def admin_window():
     userid = request.form['user']
     userpass = request.form['pass']
-    administrator=['azm']
+    administrator=['azumi']
     
     print('ID:{} ADMINLOGIN '.format(userid))
     if userid in administrator:

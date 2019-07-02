@@ -11,15 +11,15 @@
   <meta charset="utf-8">
   <title>ログイン</title>
   <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="main.css">
+  <link rel="stylesheet" type="text/css" href="../static/css/main.css">
 </head>
 <body>
-	<form action="http://192.168.2.102:50000/hello" method="post">
+	<form action="http://{{serverhost}}:{{serverport}}/show" method="post">
 		<table>
-			<tr><td>username</td><td><input type="text" name="user"></td></tr>
-			<tr><td>password</td><td><input type="password" name="pass"></td></tr>
+			<tr><td>username</td><td><input type="text" name="user" id="user"></td></tr>
+			<tr><td>password</td><td><input type="password" name="pass" id="pass"></td></tr>
 		</table>
-		<input type="submit" value="ログイン" value="button1">
+		<input type="submit" onclick="save()" value="ログイン" value="button1">
 	</form>
-    <script type="text/javascript" src="login.js"></script>
+    <script type="text/javascript" src="../static/js/login.js"></script>
 </body>
