@@ -17,18 +17,33 @@
 {% endblock %}
 	<form action="http://{{serverhost}}:{{serverport}}/enter" method="post">
 		<table>
-			<tr><td>username</td><td><input type="text" name="user"></td></tr>
-			<tr><td>password</td><td><input type="password" name="pass"></td></tr>
-			<tr><td>運動前体重(kg)</td><td><input type="text" name="wa"></td></tr>
-			<tr><td>運動後体重(kg)</td><td><input type="text" name="wb"></td></tr>
-			<tr><td>トレーニング内容</td><td><input type="text" name="text"></td></tr>
-			<tr><td>運動時間(h)</td><td><input type="text" name="time"></td></tr>
-			<tr><td>飲水量（L）</td><td><input type="text" name="moi"></td></tr>
-			<tr><td>天気(1,2,3)</td><td><input type="text" name="tenki"></td></tr>
-			<tr><td>湿度（％）</td><td><input type="text" name="sitsu"></td></tr>
+			<tr><td>運動前体重(kg)</td><td><input value="60" type="number" name="wa"></td></tr>
+			<tr><td>運動後体重(kg)</td><td><input value="60" type="number" name="wb"></td></tr>
+			<tr>
+				<td>トレーニング内容</td>
+				<td>
+					<select name="text">
+					<option value="腹筋">腹筋</option>
+					<option value="腕立て">腕立て</option>
+					<option value="twitter">twitter</option>
+					</select>
+				</td>
+			</tr>
+			<tr><td>運動時間(h)</td><td><input value="1" type="number" name="time"></td></tr>
+			<tr><td>飲水量（L）</td><td><input value="0.5" step="0.1" type="number" name="moi"></td></tr>
+			<tr>
+				<td>天気(1,2,3)</td>
+				<td>
+					<select name="tenki">
+					<option value="1">晴れ</option>
+					<option value="2">曇り</option>
+					<option value="3">雨</option>
+					</select>
+				</td>
+			</tr>
+			<tr><td>湿度（％）</td><td><input value="20" type="number" name="sitsu"></td></tr>
 		</table>
 		<input type="submit" value="送信" value="button1">
 	</form>
-	<script type="text/javascript" src="login.js"></script>
 </body>
 </html>
