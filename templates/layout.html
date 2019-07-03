@@ -15,18 +15,6 @@
 {% block content %}
 <!-- ここにメインコンテンツを書く -->
 {% endblock %}
-</body>
-<body>
-	<form action="http://{{serverhost}}:{{serverport}}/show" method="post">
-		<table>
-			<tr><td>username</td><td><input type="text" name="user"></td></tr>
-			<tr><td>password</td><td><input type="password" name="pass"></td></tr>
-		</table>
-		<input type="submit" value="結果をみる" value="button1">
-	</form>
-    <script type="text/javascript" src="login.js"></script>
-</body>
-<body>
 	<form action="http://{{serverhost}}:{{serverport}}/enter" method="post">
 		<table>
 			<tr><td>username</td><td><input type="text" name="user"></td></tr>
@@ -41,6 +29,6 @@
 		</table>
 		<input type="submit" value="送信" value="button1">
 	</form>
-    <script type="text/javascript" src="login.js"></script>
+	<script type="text/javascript" src="login.js"></script>
 </body>
 </html>
