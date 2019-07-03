@@ -62,13 +62,13 @@ def show():
             for d in reversed(data):
                 posts.append({
                   'date' : str(d[0]),
-                  'training' : str(d[3]),
                   'bweight' : str(d[1]),
                   'aweight' : str(d[2]),
-                  'dehydrateval' : str(d[4]),
-                  'dehydraterate' : str(d[5]),
-                  'intake' : str(d[6]),
-                  'period' : str(d[7])
+                  'training' : str(d[3]),
+                  'period' : str(d[4]),
+                  'intake' : str(d[5]),
+                  'dehydraterate' : str(d[6]),
+                  'dehydrateval' : str(d[1] - d[2])
                 })
             print('Success')
             resp = make_response(render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_host,serverport=server_port)
@@ -90,13 +90,13 @@ def show():
         for d in reversed(data):
             posts.append({
               'date' : str(d[0]),
-              'training' : str(d[3]),
               'bweight' : str(d[1]),
               'aweight' : str(d[2]),
-              'dehydrateval' : str(d[4]),
-              'dehydraterate' : str(d[5]),
-              'intake' : str(d[6]),
-              'period' : str(d[7])
+              'training' : str(d[3]),
+              'period' : str(d[4]),
+              'intake' : str(d[5]),
+              'dehydraterate' : str(d[6]),
+              'dehydrateval' : str(d[1] - d[2])
             })
         print('Success')
         return render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_host,serverport=server_port)
@@ -126,13 +126,13 @@ def enter():
         for d in reversed(data):
             posts.append({
               'date' : str(d[0]),
-              'training' : str(d[3]),
               'bweight' : str(d[1]),
               'aweight' : str(d[2]),
-              'dehydrateval' : str(d[4]),
-              'dehydraterate' : str(d[5]),
-              'intake' : str(d[6]),
-              'period' : str(d[7])
+              'training' : str(d[3]),
+              'period' : str(d[4]),
+              'intake' : str(d[5]),
+              'dehydraterate' : str(d[6]),
+              'dehydrateval' : str(d[1] - d[2])
             })
 
         return render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_host,serverport=server_port)
