@@ -26,19 +26,9 @@ database_name='hydration_db'
 
 @app.route("/")
 def entry():
-<<<<<<< HEAD
     resp = make_response(render_template('index.html',serverhost=server_address))
     resp.set_cookie('user', '')
     resp.set_cookie('pass', '')
-=======
-    resp = make_response(render_template('index.html',serverhost=server_host,serverport=server_port))
-    #resp.set_cookie('user', 'daiki')
-    #resp.set_cookie('pass', 'miyagawa')
-    resp.set_cookie('user', '')
-    resp.set_cookie('pass', '')
-    #resp.set_cookie('user', 'tomohiro')
-    #resp.set_cookie('pass', 'tsuchiya')
->>>>>>> add cookie
     return resp
 
 @app.route("/hello", methods=["GET","POST"])
@@ -59,11 +49,6 @@ def hello():
 
 @app.route("/show", methods=["POST"])
 def show():
-<<<<<<< HEAD
-=======
-    #userid = request.form['user']
-    #userpass = request.form['pass']
->>>>>>> add cookie
     if request.cookies.get('user') == '':
         userid = request.form['user']
         userpass = request.form['pass']
@@ -74,7 +59,6 @@ def show():
             for d in reversed(data):
                 posts.append({
                   'date' : str(d[0]),
-<<<<<<< HEAD
                   'bweight' : str(d[1]),
                   'aweight' : str(d[2]),
                   'training' : str(d[3]),
@@ -85,21 +69,6 @@ def show():
                 })
             print('Success')
             resp = make_response(render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_address))
-=======
-                  'training' : str(d[3]),
-                  'bweight' : str(d[1]),
-                  'aweight' : str(d[2]),
-                  'dehydrateval' : str(d[4]),
-                  'dehydraterate' : str(d[5]),
-                  'intake' : str(d[6]),
-                  'period' : str(d[7])
-                })
-            print('Success')
-            resp = make_response(render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_host,serverport=server_port)
-    )
-            #resp.set_cookie('user', 'daiki')
-            #resp.set_cookie('pass', 'miyagawa')
->>>>>>> add cookie
             resp.set_cookie('user', userid)
             resp.set_cookie('pass', userpass)
             return resp
@@ -131,10 +100,6 @@ def show():
 
 @app.route("/enter", methods=["GET","POST"])
 def enter():
-<<<<<<< HEAD
-=======
-    print('aaa')
->>>>>>> add cookie
     #userid = request.form['user']
     #userpass = request.form['pass']
     userid = request.cookies.get('user')
