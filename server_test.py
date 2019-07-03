@@ -10,6 +10,7 @@ pip3 install mysql-connector-python
 from flask import Flask,request,render_template
 from flask import Flask, make_response
 import my_function2_demo as my_func
+import sys
 
 app = Flask(__name__)
 #server host
@@ -106,7 +107,6 @@ def show():
 #@app.route("/entry", methods=["POST"])
 @app.route("/enter", methods=["GET","POST"])
 def enter():
-    print('aaa')
     #userid = request.form['user']
     #userpass = request.form['pass']
     userid = request.cookies.get('user')
@@ -135,9 +135,10 @@ def enter():
               'period' : str(d[7])
             })
 
-        return render_template('result.html', title='My Title', user=userid, posts=posts)
-    except:
-        return 'NG'
+        return render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_host,serverport=server_port)
+        #return render_template('result.html', title='My Title', user=userid, posts=posts)
+    except Exception as error:
+        return error.__str__()
 
 # administration page
 @app.route("/admin")

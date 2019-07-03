@@ -24,12 +24,14 @@ def kakunin(user_name,user_pass,port,host,db_name):
 
 def sql_data_send(user_name,user_pass,port,host,db_name,weight_after,weight_before,contents,time,moisture,tenki,shitsudo):
     if user_pass==user_dic[user_name]:
-        df = pd.read_csv('data_'+user_name+'.csv')
+        df = pd.read_csv('data_'+user_name+'.csv', index_col=0)
         tmp_day=datetime.date.today()
         day=tmp_day.strftime('%Y-%m-%d')
         #df.append(day,weight_after,weight_before,contents,time,moisture,tenki,shitsudo)
-        tmp_se = pd.Series([day,weight_after,weight_before,contents,time,moisture,tenki,shitsudo], index=df.columns,name=str(1))
+        columns = ["day","weight_after","weight_before","contents","time","moisture","tenki","shitsudo"]
+        tmp_se = pd.Series([day,weight_after,weight_before,contents,time,moisture,tenki,shitsudo], index=columns, name=str(df.shape[0]))
         df = df.append(tmp_se)
+        #print(df.head())
         df.to_csv('data_'+user_name+'.csv')
     return  'OK'
 
