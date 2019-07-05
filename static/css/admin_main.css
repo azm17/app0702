@@ -67,6 +67,52 @@ p {
 .p_red {
   color: red;
 }
+.childanlysis{
+  background: white;
+  background-image: url("../img/anlysis.jpg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 80%;
+}
+.childwatch{
+  background: white;
+  background-image: url("../img/watch.jpeg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 80%;
+}
+
+.childshow{
+  background: white;
+  background-image: url("../img/show.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 80%;
+}
+
+.childweather{
+  background: white;
+  background-image: url("../img/sun.jpg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 80%;
+}
+
+.childregister{
+  background: white;
+  background-image: url("../img/register.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 80%;
+}
+
+.childlogout{
+  background: white;
+  background-image: url("../img/logout.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 80%;
+}
 
 @media screen and (min-width:500px) {
 .child {

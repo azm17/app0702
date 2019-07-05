@@ -23,7 +23,7 @@ SQLserver_host='192.168.0.32'
 SQLserver_port=3306
 database_name='hydration_db'
 
-administrator=['azumi','daiki']
+administrators=['azumi','daiki']
 
 @app.route("/")
 def entry():
@@ -149,7 +149,6 @@ def admin_entry():
 
 @app.route("/admin/show",methods=["POST"])
 def admin_show():
-    administrators=['azumi']
     if request.cookies.get('user') == '':
         userid = request.form['user']
         userpass = request.form['pass']
