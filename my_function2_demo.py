@@ -13,6 +13,7 @@ user_dic={'azumi':'mamiya',
            'kenshin':'kenshin',
            'daiki':'miyagawa',
            'tomohiro':'tsuchiya'}
+print(list(user_dic.keys()))
 
 def kakunin(user_name,user_pass,port,host,db_name):
     connected=False
@@ -44,6 +45,12 @@ def sql_data_get(user_name,user_pass,port,host,db_name):
     
     return data_list
 
+def sql_username_list(user_name,user_pass,port,host,db_name):
+    if user_pass==user_dic[user_name]:
+        return list(user_dic.keys())
+    else:
+        return 'NG'
+    
 #--Written By Mutsuyo-----------------------------------
 def dassui_ritu(wb,wa):#脱水率
     z=round((wa-wb)/wb*100,1)#wb運動前　wa運動後

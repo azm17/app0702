@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0">
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="../static/css/admin_watch.css">
+	<title>watch</title>
+</head>
+<body>
+	<main>
+		<h2>Application for admin</h2>
+		<h3><名前リスト></h3>
+		<ol >
+			{% for post in posts %}
+			<li><a href="http://{{serverhost}}/admin/latest">{{post.name}}</a></li>
+			{% endfor %}
+		</ol>
+	</main>
+</body>

@@ -67,3 +67,13 @@ p {
 .p_red {
   color: red;
 }
+
+@media screen and (min-width:500px) {
+.child {
+width: 100px;
+height: 100px;
+}
+p {
+transform: translate(0px, 100px);
+}
+}

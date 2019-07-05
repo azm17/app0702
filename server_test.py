@@ -23,6 +23,8 @@ SQLserver_host='192.168.0.32'
 SQLserver_port=3306
 database_name='hydration_db'
 
+administrator=['azumi','daiki']
+
 @app.route("/")
 def entry():
     resp = make_response(render_template('index.html',serverhost=server_address))
@@ -145,23 +147,23 @@ def admin_entry():
     resp.set_cookie('pass', '')
     return resp
 
-@app.route("/admin_show",methods=["POST"])
+@app.route("/admin/show",methods=["POST"])
 def admin_show():
     administrators=['azumi']
     if request.cookies.get('user') == '':
         userid = request.form['user']
         userpass = request.form['pass']
+        posts=[]
         print("ID:{} GET ".format(userid),end='')
         if userid in administrators:
             try:
                 hantei=my_func.kakunin(userid,userpass,SQLserver_port,SQLserver_host,database_name)
-                #resp = make_response(render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_address))
+                resp = make_response(render_template('admin_main.html', title='Admin', user=userid, posts=posts,serverhost=server_address))
                 #resp.set_cookie('user', userid)
                 #resp.set_cookie('pass', userpass)
                 
                 if hantei:
-                    return render_template('admin_main.html')
-                    #return resp
+                    return resp
                 return 'either id or pass is not match as administrator'
             except Exception as error:
                 print('Fail')
@@ -188,26 +190,29 @@ def admin_show():
     else:
         return 'you are not an administrator'
     '''
-@app.route("/adminshow", methods=["POST"])
-def admin_window():
-    userid = request.form['user']
-    userpass = request.form['pass']
-    administrator=['azumi']
+#@app.route("/adminshow", methods=["POST"])
+#def admin_window():
+    #request.cookies.get('user')
+    #request.cookies.get('pass')
+#    print('ID:{} ADMINLOGIN '.format(userid))
+#    if userid in administrator:
+#        print('Success')
+#        return render_template('adminwindow.html')
+#    else:
+#        print('Fail')
+#        return 'you are not an administrator'
+
+@app.route("/admin/watch", methods=["GET","POST"])
+def admin_watch():
+    #userid = request.form['user']
+    #userpass = request.form['pass']
+    userid='azumi'
+    userpass='mamiya'
     
-    print('ID:{} ADMINLOGIN '.format(userid))
-    if userid in administrator:
-        print('Success')
-        return render_template('adminwindow.html')
-    else:
-        print('Fail')
-        return 'you are not an administrator'
-
-
-
-
-
-
-
+    namelist=my_func.sql_username_list(userid,userpass,SQLserver_port,SQLserver_host,database_name)
+    posts= [{'name' : name} for name in namelist]
+    resp = make_response(render_template('admin_watch.html',serverhost=server_address,posts=posts))
+    return resp
 
 
 
