@@ -220,8 +220,6 @@ def admin_watch():
 def admin_latest():
     ad_userid = request.cookies.get('user')
     ad_userpass = request.cookies.get('pass')
-    administrators=['azumi','daiki']
-
     #if userid in administrator:
     if True:
         print('Success')

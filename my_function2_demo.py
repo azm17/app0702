@@ -56,7 +56,7 @@ def sql_data_get_latest_all(user_name, user_pass, port, host, db_name):
             tdate = datetime.date(tdatetime.year, tdatetime.month, tdatetime.day)
             delta = now - tdate
             if delta.days < 2:
-                data_list.append((df['day'][i],df['weight_after'][i],df['weight_before'][i],df['contents'][i],df['time'][i],df['moisture'][i],df['tenki'][i],df['shitsudo'][i],user_name))
+                data_list.append((df['day'][i],df['weight_after'][i],df['weight_before'][i],df['contents'][i],df['time'][i],df['moisture'][i],df['tenki'][i],df['shitsudo'][i],u_name))
     
     return data_list
 
