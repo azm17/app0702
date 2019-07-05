@@ -4,19 +4,18 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0">
 	<meta charset="utf-8">
 	<link rel="stylesheet" type="text/css" href="../static/css/input.css">
-	<title>ログイン</title>
+	<title>Sign in</title>
 </head>
 <body>
 	<form action="http://{{serverhost}}/show" method="post">
 		<header>
-			<h2>ログイン</h2>
+			<h2>Sign in</h2>
 		</header>
 		<main>
-			<table>
-				<tr><td>username</td><td><input type="text" name="user" id="user"></td></tr>
-				<tr><td>password</td><td><input type="password" name="pass" id="pass"></td></tr>
-			</table>
-			<input type="submit" value="送信" class="button">
+			<input type="text" name="user" placeholder="Username" id="user"><br>
+			<input type="password" name="pass" placeholder="Password" id="pass"><br>
+			<input type="submit" value="Sign in" class="button">
 		</main>
 	</form>
 </body>
+

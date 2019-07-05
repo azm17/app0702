@@ -1,27 +1,21 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta name="viewport"
-      content="width=device-width,
-      height=480,
-      initial-scale=1.0,
-      minimum-scale=1.0,
-      maximum-scale=1.0,
-      user-scalable=yes" />
-    <meta charset="utf-8">
-    <title>formsample</title>
-    <link rel="stylesheet" type="text/css" href="../static/css/adminlogin.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0">
+  <meta charset="utf-8">
+  <link rel="stylesheet" type="text/css" href="../static/css/input.css">
+  <title>Sign in</title>
 </head>
 <body>
-<div class="login">
-  <div class="login-triangle"></div>
-  
-  <h2 class="login-header">Log in</h2>
-
-  <form class="login-container" action="http://{{serverhost}}:{{serverport}}/adminwindow" method="post">
-    <p><input type="text" placeholder="Username" name="user"></p>
-    <p><input type="password" placeholder="Password" name="pass"></p>
-    <p><input type="submit" value="Log in"></p>
+  <form action="http://{{serverhost}}/admin_show" method="post">
+    <header>
+      <h2>管理者用Sign in</h2>
+    </header>
+    <main>
+      <input type="text" name="user" placeholder="Username" id="user"><br>
+      <input type="password" name="pass" placeholder="Password" id="pass"><br>
+      <input type="submit" value="Sign in" class="button">
+    </main>
   </form>
-</div>
 </body>
+

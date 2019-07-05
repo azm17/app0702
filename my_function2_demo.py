@@ -18,8 +18,6 @@ def kakunin(user_name,user_pass,port,host,db_name):
     connected=False
     if user_pass==user_dic[user_name]:
         connected=True
-    else:
-        pass
     return connected
 
 def sql_data_send(user_name,user_pass,port,host,db_name,weight_after,weight_before,contents,time,moisture,tenki,shitsudo):

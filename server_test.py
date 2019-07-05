@@ -26,12 +26,8 @@ database_name='hydration_db'
 @app.route("/")
 def entry():
     resp = make_response(render_template('index.html',serverhost=server_address))
-    #resp.set_cookie('user', 'daiki')
-    #resp.set_cookie('pass', 'miyagawa')
     resp.set_cookie('user', '')
     resp.set_cookie('pass', '')
-    #resp.set_cookie('user', 'tomohiro')
-    #resp.set_cookie('pass', 'tsuchiya')
     return resp
 
 @app.route("/hello", methods=["GET","POST"])
@@ -52,8 +48,6 @@ def hello():
 
 @app.route("/show", methods=["POST"])
 def show():
-    #userid = request.form['user']
-    #userpass = request.form['pass']
     if request.cookies.get('user') == '':
         userid = request.form['user']
         userpass = request.form['pass']
@@ -73,10 +67,7 @@ def show():
                   'dehydrateval' : str(d[1] - d[2])
                 })
             print('Success')
-            resp = make_response(render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_address)
-    )
-            #resp.set_cookie('user', 'daiki')
-            #resp.set_cookie('pass', 'miyagawa')
+            resp = make_response(render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_address))
             resp.set_cookie('user', userid)
             resp.set_cookie('pass', userpass)
             return resp
@@ -106,7 +97,6 @@ def show():
         print('Fail')
         return 'NG'
 
-#@app.route("/entry", methods=["POST"])
 @app.route("/enter", methods=["GET","POST"])
 def enter():
     #userid = request.form['user']
@@ -143,12 +133,62 @@ def enter():
         return error.__str__()
 
 # administration page
+#@app.route("/admin")
+#def admin_entry():
+#    html = render_template('admin_index.html')
+#    return html
+# administration page
 @app.route("/admin")
 def admin_entry():
-    html = render_template('admin_index.html')
-    return html
+    resp = make_response(render_template('admin_index.html',serverhost=server_address))
+    resp.set_cookie('user', '')
+    resp.set_cookie('pass', '')
+    return resp
 
-@app.route("/adminwindow", methods=["POST"])
+@app.route("/admin_show",methods=["POST"])
+def admin_show():
+    administrators=['azumi']
+    if request.cookies.get('user') == '':
+        userid = request.form['user']
+        userpass = request.form['pass']
+        print("ID:{} GET ".format(userid),end='')
+        if userid in administrators:
+            try:
+                hantei=my_func.kakunin(userid,userpass,SQLserver_port,SQLserver_host,database_name)
+                #resp = make_response(render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_address))
+                #resp.set_cookie('user', userid)
+                #resp.set_cookie('pass', userpass)
+                
+                if hantei:
+                    return render_template('admin_main.html')
+                    #return resp
+                return 'either id or pass is not match as administrator'
+            except Exception as error:
+                print('Fail')
+                return 'do not connect sql server by your username \n or making html error:\n{}'.format(error.__str__())
+        else:
+            return 'you are not an administrator'
+    ''' 
+    userid = request.cookies.get('user')
+    userpass = request.cookies.get('pass')
+    print("ID:{} GET ".format(userid),end='')
+    if userid in administrators:
+        try:
+            hantei=my_func.kakunin(userid,userpass,SQLserver_port,SQLserver_host,database_name)
+            #resp = make_response(render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_address))
+            #resp.set_cookie('user', userid)
+            #resp.set_cookie('pass', userpass)
+            #return resp
+            if hantei:
+                return 'Successful!!!!'
+            return 'either id or pass is not match as administrator'
+        except Exception as error:
+            print('Fail')
+            return 'do not connect sql server by your username \n or making html error:\n{}'.format(error.__str__())
+    else:
+        return 'you are not an administrator'
+    '''
+@app.route("/adminshow", methods=["POST"])
 def admin_window():
     userid = request.form['user']
     userpass = request.form['pass']
@@ -161,9 +201,6 @@ def admin_window():
     else:
         print('Fail')
         return 'you are not an administrator'
-
-
-
 
 
 
