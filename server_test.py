@@ -15,8 +15,7 @@ import sys
 app = Flask(__name__)
 #server host
 #server_host='test-server0701.herokuapp.com'
-#server_host='192.168.0.12'
-server_host='192.168.0.6'
+server_host='192.168.0.12'
 server_port=50000
 server_address=server_host+':'+str(server_port)
 #SQL server
