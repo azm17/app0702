@@ -14,8 +14,10 @@ import sys
 
 app = Flask(__name__)
 #server host
-server_host='test-server0701.herokuapp.com'
+#server_host='test-server0701.herokuapp.com'
+server_host='192.168.0.12'
 server_port=50000
+server_address=server_host+':'+str(server_port)
 #SQL server
 SQLserver_host='192.168.0.32'
 SQLserver_port=3306
@@ -23,7 +25,7 @@ database_name='hydration_db'
 
 @app.route("/")
 def entry():
-    resp = make_response(render_template('index.html',serverhost=server_host,serverport=server_port))
+    resp = make_response(render_template('index.html',serverhost=server_address))
     #resp.set_cookie('user', 'daiki')
     #resp.set_cookie('pass', 'miyagawa')
     resp.set_cookie('user', '')
@@ -44,7 +46,7 @@ def hello():
         hantei=False
     print(hantei)
     if hantei:
-        return render_template('hello.html', title='flask test', name=userid,serverhost=server_host,serverport=server_port)# lonin success
+        return render_template('hello.html', title='flask test', name=userid,serverhost=server_address)# lonin success
     else:
         return 'either id or pass is not match'# login fail
 
@@ -71,7 +73,7 @@ def show():
                   'dehydrateval' : str(d[1] - d[2])
                 })
             print('Success')
-            resp = make_response(render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_host,serverport=server_port)
+            resp = make_response(render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_address)
     )
             #resp.set_cookie('user', 'daiki')
             #resp.set_cookie('pass', 'miyagawa')
@@ -99,7 +101,7 @@ def show():
               'dehydrateval' : str(d[1] - d[2])
             })
         print('Success')
-        return render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_host,serverport=server_port)
+        return render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_address)
     except:
         print('Fail')
         return 'NG'
@@ -135,7 +137,7 @@ def enter():
               'dehydrateval' : str(d[1] - d[2])
             })
 
-        return render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_host,serverport=server_port)
+        return render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_address)
         #return render_template('result.html', title='My Title', user=userid, posts=posts)
     except Exception as error:
         return error.__str__()
