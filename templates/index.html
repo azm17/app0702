@@ -1,25 +1,22 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta name="viewport"
-      content="width=450,
-      height=480,
-      initial-scale=1.0,
-      minimum-scale=1.0,
-      maximum-scale=2.0,
-      user-scalable=yes" />
-  <meta charset="utf-8">
-  <title>ログイン</title>
-  <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="../static/css/main.css">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0">
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="../static/css/input.css">
+	<title>ログイン</title>
 </head>
 <body>
-	<form action="http://{{serverhost}}:{{serverport}}/show" method="post">
-		<table>
-			<tr><td>username</td><td><input type="text" name="user" id="user"></td></tr>
-			<tr><td>password</td><td><input type="password" name="pass" id="pass"></td></tr>
-		</table>
-		<input type="submit" onclick="save()" value="ログイン" value="button1">
+	<form action="http://{{serverhost}}/show" method="post">
+		<header>
+			<h2>ログイン</h2>
+		</header>
+		<main>
+			<table>
+				<tr><td>username</td><td><input type="text" name="user" id="user"></td></tr>
+				<tr><td>password</td><td><input type="password" name="pass" id="pass"></td></tr>
+			</table>
+			<input type="submit" value="送信" class="button">
+		</main>
 	</form>
-    <script type="text/javascript" src="../static/js/login.js"></script>
 </body>
