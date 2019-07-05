@@ -216,7 +216,37 @@ def admin_watch():
 
 
 
+@app.route("/admin/latest")
+def admin_latest():
+    ad_userid = request.cookies.get('user')
+    ad_userpass = request.cookies.get('pass')
+    administrators=['azumi','daiki']
 
+    #if userid in administrator:
+    if True:
+        print('Success')
+        try:
+            data=my_func.sql_data_get_latest_all(ad_userid, ad_userpass,SQLserver_port,SQLserver_host,database_name)
+            posts=[]
+            for d in reversed(data):
+                posts.append({
+                  'date' : str(d[0]),
+                  'bweight' : str(d[1]),
+                  'aweight' : str(d[2]),
+                  'training' : str(d[3]),
+                  'period' : str(d[4]),
+                  'intake' : str(d[5]),
+                  'dehydraterate' : str(d[6]),
+                  'dehydrateval' : str(d[1] - d[2]),
+                  'username': str(d[8]),
+                })
+            print('Success')
+            return render_template('admin_latest.html', title='Latest posts', posts=posts,serverhost=server_address)
+        except Exception as error:
+            return error.__str__()
+    else:
+        print('Fail')
+        return 'you are not an administrator'
 
 
 

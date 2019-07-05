@@ -45,12 +45,28 @@ def sql_data_get(user_name,user_pass,port,host,db_name):
     
     return data_list
 
+def sql_data_get_latest_all(user_name, user_pass, port, host, db_name):
+    now = datetime.date.today()#.strftime('%Y-%m-%d')
+    data_list=[]
+    for u_name in user_dic.keys():
+        df = pd.read_csv('data_'+u_name+'.csv')
+        for i in range(len(df)):
+            tstr = df['day'][i] # string of date
+            tdatetime = datetime.datetime.strptime(tstr, '%Y-%m-%d')
+            tdate = datetime.date(tdatetime.year, tdatetime.month, tdatetime.day)
+            delta = now - tdate
+            if delta.days < 2:
+                data_list.append((df['day'][i],df['weight_after'][i],df['weight_before'][i],df['contents'][i],df['time'][i],df['moisture'][i],df['tenki'][i],df['shitsudo'][i],user_name))
+    
+    return data_list
+
 def sql_username_list(user_name,user_pass,port,host,db_name):
     if user_pass==user_dic[user_name]:
         return list(user_dic.keys())
     else:
         return 'NG'
     
+
 #--Written By Mutsuyo-----------------------------------
 def dassui_ritu(wb,wa):#脱水率
     z=round((wa-wb)/wb*100,1)#wb運動前　wa運動後
