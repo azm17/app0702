@@ -4,10 +4,13 @@
   <meta charset="utf-8">
   <title>最近の更新</title>
   <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
-  <link rel="stylesheet" type="text/css" href="../static/css/main.css">
+  <link rel="stylesheet" type="text/css" href="../static/css/admin_latest.css">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0">
 </head>
 <body>
+	<main>
+	<h2>Application for admin</h2>
+		<h3>過去のデータの参照</h3>
 	<table id="output">
 		<th>日付</th><th>ユーザー名</th><th>トレーニング内容</th><th>運動前体重(kg)</th><th>運動後体重(kg)</th><th>脱水量(L)</th><th>脱水率(%)</th><th>水分摂取量</th><th>運動時間(h)</th>
 		{% for post in posts %}
@@ -16,24 +19,5 @@
     	</tr>
     	{% endfor %}
 	</table>
-	<!--
-	<div id="fixed">
-		<nav>
-			<a href="http://{{serverhost}}/hello">データ入力</a>
-			<a href="http://{{serverhost}}/">ログアウト</a>
-		</nav>
-	</div>
-	-->
-	<!--
-	<body>
-	<form action="http://{{serverhost}}/hello" method="post">
-		<table>
-			<tr><td>username</td><td><input type="text" name="user" id="user"></td></tr>
-			<tr><td>password</td><td><input type="password" name="pass" id="pass"></td></tr>
-		</table>
-		<input type="submit" onclick="save()" value="ログイン" value="button1">
-	</form>
-    <script type="text/javascript" src="../static/js/login.js"></script>
-</body>
--->
+	</main>
 </body>

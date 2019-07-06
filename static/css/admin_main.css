@@ -2,7 +2,8 @@
   margin: 0;
 }
 body {
-  background-image: linear-gradient(to right, #243949 0%, #517fa4 100%);
+  /*background-image: linear-gradient(to right, #243949 0%, #517fa4 100%);*/
+  background-image: linear-gradient(to right, #2BC0E4 0%, #EAECC6 100%);
   /*background: #c6e6ee;*/
   /*background-image: linear-gradient(-20deg, #6e45e2 0%, #88d3ce 100%);*/
   font-family: 'Avenir','Helvetica Neue','Helvetica','Arial','Hiragino Sans','ヒラギノ角ゴシック',YuGothic,'Yu Gothic','メイリオ', Meiryo,'ＭＳ Ｐゴシック','MS PGothic'  

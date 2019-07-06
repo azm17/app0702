@@ -9,10 +9,10 @@
 <body>
 	<main>
 		<h2>Application for admin</h2>
-		<h3><名前リスト></h3>
+		<h3>過去のデータの参照</h3>
 		<ol >
 			{% for post in posts %}
-			<li><a href="http://{{serverhost}}/admin/latest">{{post.name}}</a></li>
+			<li><a href="http://{{serverhost}}/admin/watch/show?name={{post.id}}">{{post.name}}</a></li>
 			{% endfor %}
 		</ol>
 	</main>

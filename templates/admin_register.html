@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0">
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="../static/css/admin_register.css">
+	<title>ユーザーの追加</title>
+</head>
+<body>
+		<main>
+			<h2>Application for admin</h2>
+			<form action="http://{{serverhost}}/admin/register" method="post">
+			<h2>新しいユーザー</h2>
+			<table>
+				<tr><td>ユーザー名</td><td><input type="text" name="newuser"></td></tr>
+				<tr><td>パスワード</td><td><input type="text" name="newpass"></td></tr>
+				<tr><td>名前</td><td><input type="text" name="rname"></td></tr>
+				<tr><td>組織</td><td><input type="text" name="org"></td></tr>
+				<tr><td>年度</td><td><input value="2019" step="1" type="number" name="year"></td></tr>
+			</table>
+			<div>
+				<input type="submit" value="追加" class="button">
+			</div>
+			</form>
+		</main>
+</body>
+</html>
