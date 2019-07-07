@@ -28,7 +28,7 @@
 		  </form>
 		</div>
 		<div class="parent parent02">
-		  <form action=https://www.yahoo.co.jp/register?status=first method="post">
+		  <form action=http://{{serverhost}}/admin/message method="post">
 		  	<p>Message</p>
 		  	<input type="submit" value="" class="button child childshow">
 		  </form>
@@ -36,8 +36,14 @@
 		  	<p>Weather</p>
 		  	<input type="submit" value="" class="button child childweather">
 		  </form>
-		  <a class="child child2" href=https://wwp.shizuoka.ac.jp/ichinose/><p>Help</p></a>
-		  <a class="child childlogout" href="http://{{serverhost}}/admin"><p>Logout</p></a>
+		  <form action=http://{{serverhost}}/admin/help method="GET">
+		  	<p>Help</p>
+		  	<input type="submit" value="" class="button child child2">
+		  </form>
+		  <form action=http://{{serverhost}}/admin method="GET">
+		  	<p>Logout</p>
+		  	<input type="submit" value="" class="button child childlogout">
+		  </form>
 		</div>
 	</main>
 </body>

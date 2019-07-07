@@ -20,7 +20,9 @@ def sql_ALLuser_profile(user_name,user_pass,port,host,db_name):
     user_prof={}
     df = pd.read_csv('user_list.csv', index_col=0)
     for i in range(len(df)):
-        user_prof[df.at[i,'username']]={'rname':df.at[i,'rname'],'org':df.at[i,'org'],'year':df.at[i,'year']}
+        user_prof[df.at[i,'username']]={'rname':df.at[i,'rname'],
+                                        'org':df.at[i,'org'],
+                                        'year':df.at[i,'year']}
     return user_prof
 
 def sql_username_list(user_name,user_pass,port,host,db_name):
@@ -36,15 +38,32 @@ def kakunin(user_name,user_pass,port,host,db_name):
         connected=True
     return connected
 
-def sql_data_send(user_name,user_pass,port,host,db_name,weight_after,weight_before,contents,time,moisture,tenki,shitsudo):
+def sql_data_send(user_name,user_pass,port,host,db_name,
+                  weight_after,weight_before,contents,
+                  time,moisture,tenki,shitsudo):
+    
     user_dic=get_user_dic(user_name,user_pass,port,host,db_name)
     if user_pass==user_dic[user_name]:
         df = pd.read_csv('data_'+user_name+'.csv', index_col=0)
         tmp_day=datetime.date.today()
         day=tmp_day.strftime('%Y-%m-%d')
         #df.append(day,weight_after,weight_before,contents,time,moisture,tenki,shitsudo)
-        columns = ["day","weight_after","weight_before","contents","time","moisture","tenki","shitsudo"]
-        tmp_se = pd.Series([day,weight_after,weight_before,contents,time,moisture,tenki,shitsudo], index=columns, name=str(df.shape[0]))
+        columns = ["day",
+                   "weight_after",
+                   "weight_before",
+                   "contents",
+                   "time",
+                   "moisture",
+                   "tenki",
+                   "shitsudo"]
+        tmp_se = pd.Series([day,
+                            weight_after,
+                            weight_before,
+                            contents,
+                            time,
+                            moisture,
+                            tenki,
+                            shitsudo], index=columns, name=str(df.shape[0]))
         df = df.append(tmp_se)
         #print(df.head())
         df.to_csv('data_'+user_name+'.csv',encoding="utf-8")
@@ -58,7 +77,14 @@ def sql_data_get(user_nm,user_name,user_pass,port,host,db_name):
     if user_pass==user_dic[user_name]:
         df = pd.read_csv('data_'+user_nm+'.csv')
         for i in range(len(df)):
-            data_list.append((df['day'][i],df['weight_after'][i],df['weight_before'][i],df['contents'][i],df['time'][i],df['moisture'][i],df['tenki'][i],df['shitsudo'][i]))
+            data_list.append({'day':df['day'][i],#日
+                              'wa':df['weight_after'][i],#運動後体重
+                              'wb':df['weight_before'][i],#運動前体重
+                              'contents':df['contents'][i],#トレーニング内容
+                              'time':df['time'][i],#時間
+                              'moi':df['moisture'][i],#飲水量
+                              'tenki':df['tenki'][i],#天気
+                              'shitsudo':df['shitsudo'][i]})#湿度
     else:
         raise ValueError("error!")
     
@@ -76,7 +102,15 @@ def sql_data_get_latest_all(user_name, user_pass, port, host, db_name):
             tdate = datetime.date(tdatetime.year, tdatetime.month, tdatetime.day)
             delta = now - tdate
             if delta.days < 2:
-                data_list.append((df['day'][i],df['weight_after'][i],df['weight_before'][i],df['contents'][i],df['time'][i],df['moisture'][i],df['tenki'][i],df['shitsudo'][i],u_name))
+                data_list.append({'day':df['day'][i],#日
+                              'wa':df['weight_after'][i],#運動後体重
+                              'wb':df['weight_before'][i],#運動前体重
+                              'contents':df['contents'][i],#トレーニング内容
+                              'time':df['time'][i],#時間
+                              'moi':df['moisture'][i],#飲水量
+                              'tenki':df['tenki'][i],#天気
+                              'shitsudo':df['shitsudo'][i],
+                              'username':u_name})#湿度
     
     return data_list
 
@@ -84,11 +118,24 @@ def sql_data_get_latest_all(user_name, user_pass, port, host, db_name):
 def adduser(userid,userpass,SQLserver_port,SQLserver_host,database_name,info):
     df = pd.read_csv('user_list.csv', index_col=0)
     columns = ["username","pass","rname","org","year"]
-    tmp_se = pd.Series([info['newuser'],info['newpass'],info['rname'],info['org'],info['year']], index=columns, name=str(df.shape[0]))
+    tmp_se = pd.Series([info['newuser'],
+                        info['newpass'],
+                        info['rname'],
+                        info['org'],
+                        info['year']], index=columns, name=str(df.shape[0]))
+    
     df = df.append(tmp_se)
     df.to_csv('user_list.csv',encoding="utf-8")
     
-    columns = ["day","weight_after","weight_before","contents","time","moisture","tenki","shitsudo"]
+    columns = ["day",
+               "weight_after",
+               "weight_before",
+               "contents",
+               "time",
+               "moisture",
+               "tenki",
+               "shitsudo"]
+    
     f = open('data_'+info['newuser']+'.csv','w')
     f.write(',day,weight_after,weight_before,contents,time,moisture,tenki,shitsudo\n')
     f.close()
