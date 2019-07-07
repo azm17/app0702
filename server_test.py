@@ -7,10 +7,9 @@ Created on Sat Jun 29 17:56:33 2019
 pip3 install flask
 pip3 install mysql-connector-python
 """
-from flask import Flask,request,render_template
-from flask import Flask, make_response
+from flask import Flask,request,render_template,make_response
 import my_function2_demo as my_func
-import sys
+#import sys
 
 app = Flask(__name__)
 #server host
@@ -25,6 +24,7 @@ database_name='hydration_db'
 
 administrators=['azumi','daiki']
 
+# 一般ユーザーログイン画面送信
 @app.route("/")
 def entry():
     resp = make_response(render_template('index.html',serverhost=server_address))
@@ -32,6 +32,7 @@ def entry():
     resp.set_cookie('pass', '')
     return resp
 
+# 
 @app.route("/hello", methods=["GET","POST"])
 def hello():
     userid = request.cookies.get('user')
@@ -48,34 +49,36 @@ def hello():
     else:
         return 'either id or pass is not match'# login fail
 
+# 一般ユーザーの結果（表）画面
 @app.route("/show", methods=["POST"])
 def show():
-    if request.cookies.get('user') == '':
-        userid = request.form['user']
-        userpass = request.form['pass']
-        print("ID:{} GET ".format(userid),end='')
-        try:
-            data=my_func.sql_data_get(userid,userid,userpass,SQLserver_port,SQLserver_host,database_name)
-            posts=[]
-            for d in reversed(data):
-                posts.append({
-                  'date' : str(d[0]),
-                  'bweight' : str(d[1]),
-                  'aweight' : str(d[2]),
-                  'training' : str(d[3]),
-                  'period' : str(d[4]),
-                  'intake' : str(d[5]),
-                  'dehydraterate' : str(d[6]),
-                  'dehydrateval' : str(d[1] - d[2])
-                })
-            print('Success')
-            resp = make_response(render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_address))
-            resp.set_cookie('user', userid)
-            resp.set_cookie('pass', userpass)
-            return resp
-        except:
-            print('Fail1')
-            return 'NG'
+    #if request.cookies.get('user') == '':#cookieが空のときformから読み取り
+    userid = request.form['user']
+    userpass = request.form['pass']
+    print("ID:{} GET ".format(userid),end='')
+    try:
+        data=my_func.sql_data_get(userid,userid,userpass,SQLserver_port,SQLserver_host,database_name)
+        posts=[]
+        for d in reversed(data):
+            posts.append({
+              'date' : str(d[0]),
+              'bweight' : str(d[1]),
+              'aweight' : str(d[2]),
+              'training' : str(d[3]),
+              'period' : str(d[4]),
+              'intake' : str(d[5]),
+              'dehydraterate' : str(d[6]),
+              'dehydrateval' : str(d[1] - d[2])
+            })
+        print('Success')
+        resp = make_response(render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_address))
+        resp.set_cookie('user', userid)
+        resp.set_cookie('pass', userpass)
+        return resp
+    except:
+        print('Fail1')
+        return 'NG'
+    '''
     userid = request.cookies.get('user')
     userpass = request.cookies.get('pass')
     print("ID:{} GET ".format(userid),end='')
@@ -98,11 +101,10 @@ def show():
     except:
         print('Fail2')
         return 'NG'
+    '''
 
 @app.route("/enter", methods=["GET","POST"])
 def enter():
-    #userid = request.form['user']
-    #userpass = request.form['pass']
     userid = request.cookies.get('user')
     userpass = request.cookies.get('pass')
     print("ID:{} GET ".format(userid))
@@ -130,7 +132,6 @@ def enter():
             })
 
         return render_template('main.html', title='My Title', user=userid, posts=posts,serverhost=server_address)
-        #return render_template('result.html', title='My Title', user=userid, posts=posts)
     except Exception as error:
         return error.__str__()
 
@@ -147,26 +148,27 @@ def admin_entry():
 # 管理者ホームページ
 @app.route("/admin/show",methods=["POST"])
 def admin_show():
-    if request.cookies.get('user') == '':
-        userid = request.form['user']
-        userpass = request.form['pass']
-        posts=[]
-        print("ID:{} GET ".format(userid),end='')
-        if userid in administrators:
-            try:
-                hantei=my_func.kakunin(userid,userpass,SQLserver_port,SQLserver_host,database_name)
-                resp = make_response(render_template('admin_main.html', title='Admin', user=userid, posts=posts,serverhost=server_address))
-                #resp.set_cookie('user', userid)
-                #resp.set_cookie('pass', userpass)
-                
-                if hantei:
-                    return resp
-                return 'either id or pass is not match as administrator'
-            except Exception as error:
-                print('Fail')
-                return 'do not connect sql server by your username \n or making html error:\n{}'.format(error.__str__())
-        else:
-            return 'you are not an administrator'
+    userid = request.form['user']
+    userpass = request.form['pass']
+    posts=[]
+    print("ID:{} GET ".format(userid),end='')
+    if userid == '' or userpass == '':
+        return 'NG: None'
+    if userid in administrators: 
+        try:
+            hantei=my_func.kakunin(userid,userpass,SQLserver_port,SQLserver_host,database_name)
+            resp = make_response(render_template('admin_main.html', title='Admin', user=userid, posts=posts,serverhost=server_address))
+            resp.set_cookie('user', userid)
+            resp.set_cookie('pass', userpass)
+            
+            if hantei:
+                return resp
+            return 'either id or pass is not match as administrator'
+        except Exception as error:
+            print('Fail')
+            return 'do not connect sql server by your username \n or making html error:\n{}'.format(error.__str__())
+    else:
+        return 'you are not an administrator'
     ''' 
     userid = request.cookies.get('user')
     userpass = request.cookies.get('pass')
@@ -188,14 +190,18 @@ def admin_show():
         return 'you are not an administrator'
     '''
 # 管理者用アプリWatch
-@app.route("/admin/watch", methods=["GET","POST"])
+@app.route("/admin/watch", methods=["POST"])
 def admin_watch():
-    #userid = request.form['user']
-    #userpass = request.form['pass']
-    userid='azumi'
-    userpass='mamiya'
-    
-    user_prof=my_func.sql_ALLuser_profile(userid,userpass,SQLserver_port,SQLserver_host,database_name)
+    admin = request.cookies.get('user')
+    adminpass = request.cookies.get('pass')
+    if admin == '' or adminpass == '':
+        return 'NG: cannot access /watch'
+    try:    
+        my_func.kakunin(admin,adminpass,server_port,server_host,database_name)
+    except Exception as error:
+        return error.__str__()
+        
+    user_prof=my_func.sql_ALLuser_profile(admin,adminpass,SQLserver_port,SQLserver_host,database_name)
     posts= [{'name':user_prof[name]['rname'], \
              'id':name \
              } for name in user_prof.keys()\
@@ -206,44 +212,46 @@ def admin_watch():
 # 管理者用アプリwatchの内部機能
 @app.route("/admin/watch/show", methods=["GET","POST"])
 def admin_watch_show():
-    #userid = request.form['user']
-    #userpass = request.form['pass']
-    
-    admin='azumi'
-    adminpass='mamiya'
-    user_prof=my_func.sql_ALLuser_profile(admin,adminpass,SQLserver_port,SQLserver_host,database_name)
-    uid_get=request.args.get('name')
-    real_name=user_prof[uid_get]['rname']
-    try:
-        data=my_func.sql_data_get(uid_get,admin,adminpass,SQLserver_port,SQLserver_host,database_name)
-        posts=[]
-        for d in reversed(data):
-            posts.append({
-              'date' : str(d[0]),
-              'bweight' : str(d[1]),
-              'aweight' : str(d[2]),
-              'training' : str(d[3]),
-              'period' : str(d[4]),
-              'intake' : str(d[5]),
-              'dehydraterate' : str(d[6]),
-              'dehydrateval' : str(d[1] - d[2])
-            })
-        print('Success')
-        
-        resp = make_response(render_template('admin_show.html', title='My Title', user=real_name, posts=posts,serverhost=server_address))
-        resp.set_cookie('user', admin)
-        resp.set_cookie('pass', adminpass)
-        return resp
-    except Exception as error:
-        return error.__str__()
+    admin = request.cookies.get('user')
+    adminpass = request.cookies.get('pass')
+    if admin != '' and adminpass != '':
+        my_func.kakunin(admin,adminpass,server_port,server_host,database_name)
+        user_prof=my_func.sql_ALLuser_profile(admin,adminpass,SQLserver_port,SQLserver_host,database_name)
+        uid_get=request.args.get('name')
+        real_name=user_prof[uid_get]['rname']
+        try:
+            data=my_func.sql_data_get(uid_get,admin,adminpass,SQLserver_port,SQLserver_host,database_name)
+            posts=[]
+            for d in reversed(data):
+                posts.append({
+                  'date' : str(d[0]),
+                  'bweight' : str(d[1]),
+                  'aweight' : str(d[2]),
+                  'training' : str(d[3]),
+                  'period' : str(d[4]),
+                  'intake' : str(d[5]),
+                  'dehydraterate' : str(d[6]),
+                  'dehydrateval' : str(d[1] - d[2])
+                })
+            print('Success')
+            
+            resp = make_response(render_template('admin_show.html', title='My Title', user=real_name, posts=posts,serverhost=server_address))
+            resp.set_cookie('user', admin)
+            resp.set_cookie('pass', adminpass)
+            return resp
+        except Exception as error:
+            return error.__str__()
+    else:
+        return 'NG: cannot access watch/show'
 
 # 管理者用アプリNew!
-@app.route("/admin/latest")
+@app.route("/admin/latest", methods=["POST"])
 def admin_latest():
     ad_userid = request.cookies.get('user')
     ad_userpass = request.cookies.get('pass')
-    #if userid in administrator:
-    if True:
+    if ad_userid=='' or ad_userpass=='':
+        return 'cannot access!'
+    try:
         print('Success')
         try:
             data=my_func.sql_data_get_latest_all(ad_userid, ad_userpass,SQLserver_port,SQLserver_host,database_name)
@@ -264,22 +272,22 @@ def admin_latest():
             return render_template('admin_latest.html', title='Latest posts', posts=posts,serverhost=server_address)
         except Exception as error:
             return error.__str__()
-    else:
-        print('Fail')
-        return 'you are not an administrator'
+    except Exception as error:
+            return error.__str__()
 
 # 管理者用アプリRegister，新規ユーザー追加
 @app.route("/admin/register", methods=["GET","POST"])
 def admin_register():
-    #userid = request.form['user']
-    #userpass = request.form['pass']
+    userid = request.cookies.get('user')
+    userpass = request.cookies.get('pass')
+    if len(userid)==0 or len(userpass)==0:
+        return 'NG1: cannot access'
     
-    #userid='azumi'
-    #userpass='mamiya'
-    #namelist=my_func.sql_username_list(userid,userpass,SQLserver_port,SQLserver_host,database_name)
-    userid='azumi'
-    userpass='mamiya'
     if request.args.get('status')=='first':
+        try:    
+            my_func.kakunin(userid,userpass,server_port,server_host,database_name)
+        except Exception as error:
+            return 'NG: '+error.__str__()
         posts=[]
         resp = make_response(render_template('admin_register.html',serverhost=server_address,posts=posts))
         return resp
@@ -307,10 +315,8 @@ def admin_register():
 # 管理者用アプリRegister内部機能，新規ユーザー情報送信
 @app.route("/admin/register_submit", methods=["GET","POST"])
 def admin_register_submit():
-    #userid = request.form['user']
-    #userpass = request.form['pass']
-    userid='azumi'
-    userpass='mamiya'
+    userid = request.cookies.get('user')
+    userpass = request.cookies.get('pass')
     info={'newuser':request.form['newuser'],
           'newpass':request.form['newpass'],
           'rname':request.form['rname'],

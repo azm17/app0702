@@ -10,14 +10,32 @@
 	<main>
 		<h2>Application for admin</h2>
 		<div class="parent parent01">
-		  <a class="child childnew" href="http://{{serverhost}}/admin/latest"><p class="p_red">New!</p></a>
-		  <a class="child childwatch" href="http://{{serverhost}}/admin/watch"><p>Watch</p></a>
-		  <a class="child childanlysis" href="http://{{serverhost}}/admin/analysis"><p>Analysis</p></a>
-		  <a class="child childregister" href="http://{{serverhost}}/admin/register?status=first"><p>Register</p></a>
+		  <form action=http://{{serverhost}}/admin/latest method="post">
+		  	<p class="p_red">New!</p>
+		  	<input type="submit" value="" class="button child childnew">
+		  </form>
+		  <form action=http://{{serverhost}}/admin/watch method="post">
+		  	<p>Watch</p>
+		  	<input type="submit" value="" class="button child childwatch">
+		  </form>
+		  <form action=http://{{serverhost}}/admin/analysis method="post">
+		  	<p>Analysis</p>
+		  	<input type="submit" value="" class="button child childanlysis">
+		  </form>
+		  <form action=http://{{serverhost}}/admin/register?status=first method="post">
+		  	<p>Register</p>
+		  	<input type="submit" value="" class="button child childregister">
+		  </form>
 		</div>
 		<div class="parent parent02">
-		  <a class="child childshow" href="https://www.yahoo.co.jp/"><p>Message</p></a>
-		  <a class="child childweather" href="https://weathernews.jp/onebox/area/JAPAN.html"><p>Weather</p></a>
+		  <form action=https://www.yahoo.co.jp/register?status=first method="post">
+		  	<p>Message</p>
+		  	<input type="submit" value="" class="button child childshow">
+		  </form>
+		  <form action=https://weathernews.jp/onebox/area/JAPAN.html method="post">
+		  	<p>Weather</p>
+		  	<input type="submit" value="" class="button child childweather">
+		  </form>
 		  <a class="child child2" href=https://wwp.shizuoka.ac.jp/ichinose/><p>Help</p></a>
 		  <a class="child childlogout" href="http://{{serverhost}}/admin"><p>Logout</p></a>
 		</div>
