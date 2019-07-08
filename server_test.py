@@ -13,7 +13,8 @@ import my_function2_demo as my_func
 
 app = Flask(__name__)
 #server host
-server_host='192.168.2.102'
+#server_host='192.168.2.102'
+server_host='192.168.0.6'
 #server_host='test-server0701.herokuapp.com'
 server_port=50000
 server_address=server_host+':'+str(server_port)
@@ -430,6 +431,7 @@ def admin_register():
     except Exception as error:
         return 'Fail:SQLserver Error'+error.__str__()
     
+"""
 # 管理者用アプリRegister内部機能，新規ユーザー情報送信
 @app.route("/admin/register_submit", methods=["GET","POST"])
 def admin_register_submit():
@@ -455,6 +457,7 @@ def admin_register_submit():
             return 'NG'
     except Exception as error:
         return 'Fail:SQLserver Error'+error.__str__()
+"""
 
 # 管理者用アプリAnalysis，簡単な統計，解析
 @app.route("/admin/analysis", methods=["GET","POST"])
@@ -465,13 +468,90 @@ def admin_analysis():
         return 'cannot access analysis'
     return 'Analysis機能は工事中です。もうしばらくお待ちください。'
 
+
+# 管理者用アプリ Message, 管理者から全体への連絡事項を追加
 @app.route("/admin/message", methods=["GET","POST"])
 def admin_message():
     userid = request.cookies.get('user')
     userpass = request.cookies.get('pass')
-    if len(userid)==0 or len(userpass)==0:
-        return 'cannot access message'
-    return 'Message機能は工事中です。もうしばらくお待ちください。'
+    messages = my_func.sql_message_get(
+        userid,
+        userpass,
+        SQLserver_port, 
+        SQLserver_host, 
+        database_name,
+        max_messages = 10,
+    )
+
+    posts = []
+    for d in messages:
+        posts.append({
+            'day': d['day'],
+            'userid': d['userid'],
+            'group': d['group'],
+            'title': d['title'],
+            'contents': d['contents'],
+        })
+
+    if request.args.get('status')=='first':
+        try:    
+            my_func.kakunin(userid,userpass,server_port,server_host,database_name)
+        except Exception as error:
+            return 'NG: '+error.__str__()
+        resp = make_response(render_template('admin_message.html',
+                                             serverhost=server_address,
+                                             posts=posts))
+        return resp
+
+    try:
+        if len(userid)==0 or len(userpass)==0:
+            return 'cannot access message'
+    
+        # you have to add form of group below
+        group = None
+        title = str(request.form['title'])
+        contents = str(request.form['contents'])
+
+        my_func.sql_message_send(
+            userid, 
+            userpass, 
+            SQLserver_port, 
+            SQLserver_host, 
+            database_name,
+            group,
+            title, 
+            contents,
+        )
+
+        messages = my_func.sql_message_get(
+            userid,
+            userpass,
+            SQLserver_port, 
+            SQLserver_host, 
+            database_name,
+            max_messages = 10,
+        )
+        posts = []
+        for d in messages:
+            posts.append({
+                'day': d['day'],
+                'userid': d['userid'],
+                'group': d['group'],
+                'title': d['title'],
+                'contents': d['contents'],
+            })
+
+        return render_template('admin_message.html', 
+                               title='Message',
+                               user=userid,
+                               posts=posts,
+                               serverhost=server_address)
+    except Exception as error:
+        return error.__str__()
+    #return 'Message機能は工事中です。もうしばらくお待ちください。'
+
+
+
 
 @app.route("/admin/help", methods=["GET"])
 def admin_help():

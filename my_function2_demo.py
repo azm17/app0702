@@ -111,8 +111,71 @@ def sql_data_get_latest_all(user_name, user_pass, port, host, db_name):
                               'tenki':df['tenki'][i],#天気
                               'shitsudo':df['shitsudo'][i],
                               'username':u_name})#湿度
+                data_list.sort(key=lambda x:x['day'])
+                data_list.reverse()
     
     return data_list
+
+
+def sql_message_send(userid, userpass, SQLserver_port, 
+                     SQLserver_host, database_name, 
+                     group, title, contents):
+
+    user_dic=get_user_dic(userid,userpass,SQLserver_port,
+                          SQLserver_host,database_name)
+    if userpass==user_dic[userid]:
+        df = pd.read_csv('message.csv', index_col=0)
+        columns = ["day",
+                   "userid",
+                   "group",
+                   "title",
+                   "contents",
+        ]
+
+        tmp_day=datetime.date.today()
+        day=tmp_day.strftime('%Y-%m-%d')
+        tmp_se = pd.Series([day,
+                            userid,
+                            "ALL",  # you have to change!
+                            title, 
+                            contents,
+                           ], index=columns, name=str(df.shape[0]))
+        df = df.append(tmp_se)
+        #print(df.head())
+        df.to_csv('message.csv',encoding="utf-8")
+        return  'OK'
+    return 'Not found'
+
+
+def sql_message_get(userid, userpass, SQLserver_port, SQLserver_host,
+                    database_name, max_messages = 10):
+    
+    user_dic=get_user_dic(userid,userpass,SQLserver_port,
+                          SQLserver_host,database_name)
+    data_list = []
+    if userpass==user_dic[userid]:
+        df = pd.read_csv('message.csv')
+        for i in range(len(df)):
+            #tstr = df['day'][i] # string of date
+            #tdatetime = datetime.datetime.strptime(tstr, '%Y-%m-%d')
+            #tdate = datetime.date(tdatetime.year, tdatetime.month, tdatetime.day)
+            #delta = now - tdate
+            #if delta.days < 2:
+            data_list.append({
+                'day':df['day'][i],#日
+                'userid':df['userid'][i],
+                'group': df['group'][i],
+                'title': df['title'][i],
+                'contents': df['contents'][i],
+            })
+            data_list.sort(key=lambda x:x['day'])
+            data_list.reverse()
+    
+    if len(data_list) > max_messages:
+        return data_list[:max_messages]
+    return data_list
+
+    
 
 
 def adduser(userid,userpass,SQLserver_port,SQLserver_host,database_name,info):
