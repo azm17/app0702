@@ -116,7 +116,6 @@ def sql_data_get_latest_all(user_name, user_pass, port, host, db_name):
     
     return data_list
 
-
 def sql_message_send(userid, userpass, SQLserver_port, 
                      SQLserver_host, database_name, 
                      group, title, contents):

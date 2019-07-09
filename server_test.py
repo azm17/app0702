@@ -2,19 +2,21 @@
 """
 Created on Sat Jun 29 17:56:33 2019
 
-@author: Azumi Mamiya
+@author: Azumi Mamiya 
+         Daiki Miyagawa
 
 pip3 install flask
 pip3 install mysql-connector-python
+pip3 import datetime
 """
 from flask import Flask,request,render_template,make_response
 import my_function2_demo as my_func
-#import sys
 
 app = Flask(__name__)
 #server host
-#server_host='192.168.2.102'
-server_host='192.168.0.6'
+server_host='192.168.0.12'
+#server_host='192.168.56.1'
+#server_host='192.168.0.6'
 #server_host='test-server0701.herokuapp.com'
 server_port=50000
 server_address=server_host+':'+str(server_port)
@@ -147,8 +149,8 @@ def enter():
         moisture= float(request.form['moi'])
         tenki= int(request.form['tenki'])
         shitsudo= float(request.form['sitsu'])
-        my_func.sql_data_send(userid,
-                              userpass,
+        my_func.sql_data_send(userid,#ログインするユーザ
+                              userpass,#ログインするユーザのパス
                               SQLserver_port,
                               SQLserver_host,
                               database_name,
@@ -187,12 +189,15 @@ def enter():
     except Exception as error:
         return error.__str__()
 
-# administration page
+# for administration
+#全てのユーザのプロフィールを取得：本名，組織，年度
+user_prof={}
 # 管理者ログインページ
 @app.route("/admin")
 @app.route("/admin/")
 def admin_entry():
-    resp = make_response(render_template('admin_index.html',serverhost=server_address))
+    resp = make_response(render_template('admin_index.html',
+                                         serverhost=server_address))
     resp.set_cookie('user', '')
     resp.set_cookie('pass', '')
     return resp
@@ -200,26 +205,38 @@ def admin_entry():
 # 管理者ホームページ
 @app.route("/admin/show",methods=["POST"])
 def admin_show():
-    userid = request.form['user']
-    userpass = request.form['pass']
+    global user_prof
+    admin = request.cookies.get('user')
+    adminpass = request.cookies.get('pass')
+    if admin == '' or adminpass == '':
+        admin = request.form['user']
+        adminpass = request.form['pass']
+    #user情報，初めの読み込み
+    user_prof=my_func.sql_ALLuser_profile(admin,#管理者名
+                                          adminpass,#管理者のパスワード
+                                          SQLserver_port,
+                                          SQLserver_host,
+                                          database_name)
+    
     posts=[]
-    print("ID:{} GET ".format(userid),end='')
-    if userid == '' or userpass == '':
+    print("ID:{} GET ".format(admin),end='')
+    if admin == '' or adminpass == '':
         return 'NG: None'
-    if userid in administrators: 
+    if admin in administrators: 
         try:
-            hantei=my_func.kakunin(userid,userpass,
+            hantei=my_func.kakunin(admin,
+                                   adminpass,
                                    SQLserver_port,
                                    SQLserver_host,
                                    database_name)
             
             resp = make_response(render_template('admin_main.html',
                                                  title='Admin',
-                                                 user=userid,
+                                                 user=admin,
                                                  posts=posts,
                                                  serverhost=server_address))
-            resp.set_cookie('user', userid)
-            resp.set_cookie('pass', userpass)
+            resp.set_cookie('user', admin)
+            resp.set_cookie('pass', adminpass)
             
             if hantei:
                 return resp
@@ -265,24 +282,26 @@ def admin_watch():# ユーザリスト　ユーザを選び->admin_watch_show()
         return 'NG: cannot access /watch'
     
     try:
-        my_func.kakunin(admin,adminpass,server_port,server_host,database_name)
+        my_func.kakunin(admin,
+                        adminpass,
+                        server_port,
+                        server_host,
+                        database_name)
     except Exception as error:
         #接続失敗，SQLに接続できないなど
         return error.__str__()
-    #全てのユーザのプロフィールを取得：本名，組織，年度
-    user_prof=my_func.sql_ALLuser_profile(admin,#管理者名
-                                          adminpass,#管理者のパスワード
-                                          SQLserver_port,
-                                          SQLserver_host,
-                                          database_name)
     
-    posts= [{'name':user_prof[name]['rname'], \
-             'id':name \
-             } for name in user_prof.keys()]
-    
+    posts= [{'name':user_prof[name]['rname'],
+             'org':user_prof[name]['org'],
+             'year':user_prof[name]['year'],
+             'id':name,
+             } for name in user_prof.keys()
+    ]
+    print(posts)
     resp = make_response(render_template('admin_watch.html',
                                          serverhost=server_address,
-                                         posts=posts))
+                                         posts=posts)
+    )
     
     return resp
 
@@ -293,13 +312,11 @@ def admin_watch_show():
     adminpass = request.cookies.get('pass')# クッキーを保存
     if admin != '' and adminpass != '':
         #SQLサーバ接続テスト：ユーザ名，パスワードの整合性の確認
-        my_func.kakunin(admin,adminpass,server_port,server_host,database_name)
-        #全てのユーザのプロフィールを取得：本名，組織，年度
-        user_prof=my_func.sql_ALLuser_profile(admin,#管理者名
-                                              adminpass,#管理者のパスワード
-                                              SQLserver_port,
-                                              SQLserver_host,
-                                              database_name)
+        my_func.kakunin(admin,
+                        adminpass,
+                        server_port,
+                        server_host,
+                        database_name)
         uid_get=request.args.get('name')#　見たいユーザ名
         real_name=user_prof[uid_get]['rname']# 見たいユーザの本名
         
@@ -330,7 +347,8 @@ def admin_watch_show():
                                                  title='My Title', 
                                                  user=real_name,
                                                  posts=posts,
-                                                 serverhost=server_address))
+                                                 serverhost=server_address)
+            )
             resp.set_cookie('user', admin)# クッキーの再設定
             resp.set_cookie('pass', adminpass)# クッキーの再設定
             
@@ -356,12 +374,6 @@ def admin_latest():
                                                  SQLserver_port,
                                                  SQLserver_host,
                                                  database_name)
-            
-            user_prof=my_func.sql_ALLuser_profile(ad_userid,#管理者名
-                                              ad_userpass,#管理者のパスワード
-                                              SQLserver_port,
-                                              SQLserver_host,
-                                              database_name)
             posts=[]
             for d in reversed(data):
                 posts.append({
@@ -375,13 +387,15 @@ def admin_latest():
                   'dehydrateval' : str(float(d['wb'])-float(d['wa'])),#脱水量
                   'tenki':d['tenki'],#天気
                   'shitsudo':d['shitsudo'],#湿度
-                  'username':user_prof[d['username']]['rname']# ユーザの本名
-                })
+                  'username':user_prof[d['username']]['rname']}# ユーザの本名
+                )
             print('Success')
-            return render_template('admin_latest.html', 
-                                   title='Latest posts', 
-                                   posts=posts,
-                                   serverhost=server_address)
+            return render_template(
+                    'admin_latest.html', 
+                    title='Latest posts', 
+                    posts=posts,
+                    serverhost=server_address
+                    )
         except Exception as error:
             return error.__str__()
     except Exception as error:
@@ -390,6 +404,7 @@ def admin_latest():
 # 管理者用アプリRegister，新規ユーザー追加
 @app.route("/admin/register", methods=["GET","POST"])
 def admin_register():
+    global user_prof
     userid = request.cookies.get('user')
     userpass = request.cookies.get('pass')
     if len(userid)==0 or len(userpass)==0:
@@ -397,11 +412,18 @@ def admin_register():
     
     if request.args.get('status')=='first':
         try:    
-            my_func.kakunin(userid,userpass,server_port,server_host,database_name)
+            my_func.kakunin(
+                    userid,
+                    userpass,
+                    server_port,
+                    server_host,
+                    database_name
+            )
         except Exception as error:
             return 'NG: '+error.__str__()
         posts=[]
         resp = make_response(render_template('admin_register.html',
+                                             text='',
                                              serverhost=server_address,
                                              posts=posts))
         return resp
@@ -423,51 +445,24 @@ def admin_register():
                                database_name,info)
         if hantei:
             resp='OK'
-            resp = make_response(render_template('admin_register.html',
-                                                 serverhost=server_address))
+            resp = make_response(render_template(
+                    'admin_register.html',
+                    text=request.form['rname']+'さんを登録しました．',
+                    serverhost=server_address)
+            )
+            #user_proの更新
+            user_prof=my_func.sql_ALLuser_profile(
+                    userid,#管理者名
+                    userpass,#管理者のパスワード
+                    SQLserver_port,
+                    SQLserver_host,
+                    database_name
+                    )
             return resp
         else:
             return 'NG'
     except Exception as error:
         return 'Fail:SQLserver Error'+error.__str__()
-    
-"""
-# 管理者用アプリRegister内部機能，新規ユーザー情報送信
-@app.route("/admin/register_submit", methods=["GET","POST"])
-def admin_register_submit():
-    userid = request.cookies.get('user')
-    userpass = request.cookies.get('pass')
-    info={'newuser':request.form['newuser'],#新しいユーザ名
-          'newpass':request.form['newpass'],#新しいユーザのパスワード
-          'rname':request.form['rname'],#本名
-          'org':request.form['org'],#組織
-          'year':request.form['year']}#年度
-    try:
-        hantei=my_func.adduser(userid,
-                               userpass,
-                               SQLserver_port,
-                               SQLserver_host,
-                               database_name,info)
-        if hantei:
-            resp='OK'
-            resp = make_response(render_template('admin_register.html',
-                                                 serverhost=server_address))
-            return resp
-        else:
-            return 'NG'
-    except Exception as error:
-        return 'Fail:SQLserver Error'+error.__str__()
-"""
-
-# 管理者用アプリAnalysis，簡単な統計，解析
-@app.route("/admin/analysis", methods=["GET","POST"])
-def admin_analysis():
-    userid = request.cookies.get('user')
-    userpass = request.cookies.get('pass')
-    if len(userid)==0 or len(userpass)==0:
-        return 'cannot access analysis'
-    return 'Analysis機能は工事中です。もうしばらくお待ちください。'
-
 
 # 管理者用アプリ Message, 管理者から全体への連絡事項を追加
 @app.route("/admin/message", methods=["GET","POST"])
@@ -477,12 +472,12 @@ def admin_message():
     messages = my_func.sql_message_get(
         userid,
         userpass,
-        SQLserver_port, 
+        SQLserver_port,
         SQLserver_host, 
         database_name,
-        max_messages = 10,
+        max_messages = 10
     )
-
+    
     posts = []
     for d in messages:
         posts.append({
@@ -490,28 +485,30 @@ def admin_message():
             'userid': d['userid'],
             'group': d['group'],
             'title': d['title'],
-            'contents': d['contents'],
-        })
-
+            'contents': d['contents']}
+        )
+        
     if request.args.get('status')=='first':
-        try:    
+        try:
             my_func.kakunin(userid,userpass,server_port,server_host,database_name)
         except Exception as error:
             return 'NG: '+error.__str__()
-        resp = make_response(render_template('admin_message.html',
-                                             serverhost=server_address,
-                                             posts=posts))
+        resp = make_response(render_template(
+                'admin_message.html',
+                 serverhost=server_address,
+                 posts=posts
+                 ))
         return resp
-
+    
     try:
         if len(userid)==0 or len(userpass)==0:
             return 'cannot access message'
-    
+        
         # you have to add form of group below
         group = None
         title = str(request.form['title'])
         contents = str(request.form['contents'])
-
+        
         my_func.sql_message_send(
             userid, 
             userpass, 
@@ -522,7 +519,7 @@ def admin_message():
             title, 
             contents,
         )
-
+        
         messages = my_func.sql_message_get(
             userid,
             userpass,
@@ -538,20 +535,27 @@ def admin_message():
                 'userid': d['userid'],
                 'group': d['group'],
                 'title': d['title'],
-                'contents': d['contents'],
-            })
-
-        return render_template('admin_message.html', 
-                               title='Message',
-                               user=userid,
-                               posts=posts,
-                               serverhost=server_address)
+                'contents': d['contents']}
+            )
+        
+        return render_template(
+                'admin_message.html', 
+                 title='Message',
+                 user=userid,
+                 posts=posts,
+                 serverhost=server_address
+                 )
     except Exception as error:
         return error.__str__()
-    #return 'Message機能は工事中です。もうしばらくお待ちください。'
-
-
-
+    
+# 管理者用アプリAnalysis，簡単な統計，解析
+@app.route("/admin/analysis", methods=["GET","POST"])
+def admin_analysis():
+    userid = request.cookies.get('user')
+    userpass = request.cookies.get('pass')
+    if len(userid)==0 or len(userpass)==0:
+        return 'cannot access analysis'
+    return 'Analysis機能は工事中です。もうしばらくお待ちください。'
 
 @app.route("/admin/help", methods=["GET"])
 def admin_help():
