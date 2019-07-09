@@ -11,21 +11,20 @@ body {
 form {
 	width: 96%;
 	margin: 10px auto;
-	box-shadow: 0px 5px 10px -5px rgba(0,0,0,0.4);
 }
 
 header {
 	color: white;
-	background: #02badd;
 	min-height: 3em;
 }
 
 main {
-	background: white;
 	font-weight: bold;
 	padding: 20px 5px;
 }
-
+h2 {
+	color: white;
+}
 input {
 	border-style: none;
 	border-bottom: solid 1px silver;

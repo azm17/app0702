@@ -7,7 +7,139 @@
   <link rel="stylesheet" type="text/css" href="../static/css/main.css">
   <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0">
 </head>
-<body>
+<body width="100%">
+	<h2>&nbsp;部活Do!食べる部 
+		<br>&nbsp;&nbsp;&nbsp;&nbsp;Let's hydrate！</h2>
+	<div><br>
+		<div>
+		<h3>{{rname}}さん，こんにちわ。</h3>
+		<h2>最新の結果</h2>
+		</div>
+		<table id="output" width="100%">
+		<tr>
+			<th>
+			日付
+			</th>
+			<th>
+			トレーニング内容
+			</th>
+		<tr>
+			</tr>
+			<td align="center">
+			{{latest.date}}
+			</td>
+			<td align="center">
+			{{latest.training}}
+			</td>
+		</tr>
+		<tr>
+			<th>
+			日付
+			</th>
+			<th>
+			トレーニング内容
+			</th>
+		<tr>
+		</tr>
+			<td align="center">
+			{{latest.date}}
+			</td>
+			<td align="center">
+			{{latest.training}}
+			</td>
+		</tr>
+		<tr>
+			<th>
+			気温(°C)
+			</th>
+			<th>
+			運動前体重(kg)
+			</th>
+		</tr>
+		<tr>
+			<td align="center">
+			{{latest.training}}
+			</td>
+			<td align="center">
+			{{latest.bweight}}
+			</td>
+		</tr>
+		<tr>
+			<th>
+			運動後体重(kg)
+			</th>
+			<th>
+			脱水率(%)
+			</th>
+		</tr>
+		<tr>
+			<td align="center">
+			{{latest.aweight}}
+			</td>
+			<td align="center">
+			{{latest.dehydraterate}}
+			</td>
+		</tr>
+		<tr>
+			<th>
+			飲水量(L)
+			</th>
+			<th>
+			トレーニング時間(h)
+			</th>
+		</tr>
+		<tr>
+			<td align="center">
+			{{latest.intake}}
+			</td>
+			<td align="center">
+			{{latest.period}}
+			</td>
+		</tr>
+		<tr>
+			<th>
+			トレーニング中<br>必要飲水量(L)
+			</th>
+			<th>
+			1%脱水量(g)
+			</th>
+		</tr>
+		<tr>
+			<td align="center">
+			{{latest.training}}
+			</td>
+			<td align="center">
+			{{latest.training}}
+			</td>
+		</tr>
+		<tr>
+			<th>
+			1%脱水体重(kg)
+			</th>
+			<th>
+			トレーニング中<br>必要飲水量(L)
+			</th>
+		</tr>
+		<tr>
+			<td align="center">
+			{{latest.training}}
+			</td>
+			<td align="center">
+			{{latest.training}}
+			</td>
+		</tr>
+		</table>
+		<div>
+		<h4>{{comment}}</h4>
+	   <img src="./static/img/suzuki1.png" width="50%" alt="鈴木さん1" title="test">
+		</div>
+	<br>
+	<h3>皆さんへの連絡</h3>
+	{% for text in texts%}
+    <li>[{{text.day}}]{{text.title}}：<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{text.contents}}</li>
+    {% endfor %}
+    <br><br>
+	<h2>過去の結果</h2>
 	<table id="output">
 		<th>日付</th><th>トレーニング内容</th><th>運動前体重(kg)</th><th>運動後体重(kg)</th><th>脱水量(L)</th><th>脱水率(%)</th><th>水分摂取量</th><th>運動時間(h)</th>
 		{% for post in posts %}
@@ -16,6 +148,7 @@
     	</tr>
     	{% endfor %}
 	</table>
+	</div>
 	<div id="fixed">
 		<nav>
 			<a href="http://{{serverhost}}/hello">データ入力</a>
