@@ -9,20 +9,28 @@ Created on Fri May 17 12:52:30 2019
 import datetime
 import pandas as pd
 
+
+#すべてのユーザーのIDとパスを表示
 def get_user_dic(user_name,user_pass,port,host,db_name):
     user_dic={}
-    df = pd.read_csv('./csv/user_list.csv', index_col=0)
+    df = pd.read_csv('./database/user_list.csv',
+                     index_col=0,
+                     encoding="shift-jis")#ユーザーリストからidとpassを取得
     for i in range(len(df)):
-        user_dic[df.at[i,'username']]=df.at[i,'pass']
+        user_dic[df.at[i,'id']]=df.at[i,'password']
+    
     return user_dic
 
 def sql_ALLuser_profile(user_name,user_pass,port,host,db_name):
     user_prof={}
-    df = pd.read_csv('./csv/user_list.csv', index_col=0)
+    df = pd.read_csv('./database/user_list.csv',
+                     index_col=0,
+                     encoding="shift-jis")#すべてのユーザのpass以外情報を取得
     for i in range(len(df)):
-        user_prof[df.at[i,'username']]={'rname':df.at[i,'rname'],
-                                        'org':df.at[i,'org'],
-                                        'year':df.at[i,'year']}
+        user_prof[df.at[i,'id']]={'rname':df.at[i,'rname'],
+                                  'type':df.at[i,'type'],
+                                  'org':df.at[i,'org'],
+                                  'year':df.at[i,'year']}
     return user_prof
 
 def sql_username_list(user_name,user_pass,port,host,db_name):
@@ -31,6 +39,7 @@ def sql_username_list(user_name,user_pass,port,host,db_name):
         return list(user_dic.keys())
     return 'NG'
 
+#ログイン処理
 def kakunin(user_name,user_pass,port,host,db_name):
     connected=False
     user_dic=get_user_dic(user_name,user_pass,port,host,db_name)
@@ -38,25 +47,38 @@ def kakunin(user_name,user_pass,port,host,db_name):
         connected=True
     return connected
 
-def sql_data_send(user_name,user_pass,port,host,db_name,
-                  weight_after,weight_before,contents,
-                  time,moisture,tenki,shitsudo):
+def sql_data_send(user_name,
+                  user_pass,
+                  port,host,
+                  db_name,
+                  weight_after,
+                  weight_before,
+                  contents,
+                  time,
+                  moisture,
+                  tenki,
+                  shitsudo):
     
     user_dic=get_user_dic(user_name,user_pass,port,host,db_name)
     if user_pass==user_dic[user_name]:
-        df = pd.read_csv('./csv/data_'+user_name+'.csv', index_col=0)
+        df = pd.read_csv('./database/data.csv',
+                         index_col=0,
+                         encoding="shift-jis")
+        
         tmp_day=datetime.date.today()
         day=tmp_day.strftime('%Y-%m-%d')
-        #df.append(day,weight_after,weight_before,contents,time,moisture,tenki,shitsudo)
-        columns = ["day",
-                   "weight_after",
-                   "weight_before",
-                   "contents",
+        columns = ["id",
+                   "day",
+                   "weather",
+                   "humidity",
+                   "training",
                    "time",
-                   "moisture",
-                   "tenki",
-                   "shitsudo"]
-        tmp_se = pd.Series([day,
+                   "bweight",
+                   "aweight",
+                   "water"                   
+                   ]
+        tmp_se = pd.Series([user_name,
+                            day,
                             weight_after,
                             weight_before,
                             contents,
@@ -65,8 +87,7 @@ def sql_data_send(user_name,user_pass,port,host,db_name,
                             tenki,
                             shitsudo], index=columns, name=str(df.shape[0]))
         df = df.append(tmp_se)
-        #print(df.head())
-        df.to_csv('./csv/data_'+user_name+'.csv',encoding="utf-8")
+        df.to_csv('./database/data.csv',encoding="shift-jis")
     return  'OK'
 
 def sql_data_get(user_nm,user_name,user_pass,port,host,db_name):
@@ -75,16 +96,21 @@ def sql_data_get(user_nm,user_name,user_pass,port,host,db_name):
     data_list=[]
     user_dic=get_user_dic(user_name,user_pass,port,host,db_name)
     if user_pass==user_dic[user_name]:
-        df = pd.read_csv('./csv/data_'+user_nm+'.csv')
+        tmp_df = pd.read_csv('./database/data.csv',
+                         index_col=0,
+                         encoding="shift-jis")
+        
+        df=tmp_df[tmp_df['id'] ==user_nm].reset_index()
+        data_list=[]
         for i in range(len(df)):
             data_list.append({'day':df['day'][i],#日
-                              'wa':df['weight_after'][i],#運動後体重
-                              'wb':df['weight_before'][i],#運動前体重
-                              'contents':df['contents'][i],#トレーニング内容
+                              'wa':df['aweight'][i],#運動後体重
+                              'wb':df['bweight'][i],#運動前体重
+                              'contents':df['training'][i],#トレーニング内容
                               'time':df['time'][i],#時間
-                              'moi':df['moisture'][i],#飲水量
-                              'tenki':df['tenki'][i],#天気
-                              'shitsudo':df['shitsudo'][i]})#湿度
+                              'moi':df['water'][i],#飲水量
+                              'tenki':df['weather'][i],#天気
+                              'shitsudo':df['humidity'][i]})#湿度
     else:
         raise ValueError("error!")
     
@@ -95,7 +121,9 @@ def sql_data_get_latest_all(user_name, user_pass, port, host, db_name):
     data_list=[]
     user_dic=get_user_dic(user_name,user_pass,port,host,db_name)
     for u_name in user_dic.keys():
-        df = pd.read_csv('./csv/data_'+u_name+'.csv')
+        tmp_df = pd.read_csv('./database/data.csv',
+                         encoding="shift-jis")
+        df=tmp_df[tmp_df['id'] ==u_name].reset_index()
         for i in range(len(df)):
             tstr = df['day'][i] # string of date
             tdatetime = datetime.datetime.strptime(tstr, '%Y-%m-%d')
@@ -103,30 +131,41 @@ def sql_data_get_latest_all(user_name, user_pass, port, host, db_name):
             delta = now - tdate
             if delta.days < 2:
                 data_list.append({'day':df['day'][i],#日
-                              'wa':df['weight_after'][i],#運動後体重
-                              'wb':df['weight_before'][i],#運動前体重
-                              'contents':df['contents'][i],#トレーニング内容
+                              'wa':df['aweight'][i],#運動後体重
+                              'wb':df['bweight'][i],#運動前体重
+                              'contents':df['training'][i],#トレーニング内容
                               'time':df['time'][i],#時間
-                              'moi':df['moisture'][i],#飲水量
-                              'tenki':df['tenki'][i],#天気
-                              'shitsudo':df['shitsudo'][i],
+                              'moi':df['water'][i],#飲水量
+                              'tenki':df['weather'][i],#天気
+                              'shitsudo':df['humidity'][i],
                               'username':u_name})#湿度
                 data_list.sort(key=lambda x:x['day'])
                 data_list.reverse()
     
     return data_list
 
-def sql_message_send(userid, userpass, SQLserver_port, 
-                     SQLserver_host, database_name, 
-                     group, title, contents):
+def sql_message_send(userid,
+                     userpass,
+                     SQLserver_port, 
+                     SQLserver_host,
+                     database_name, 
+                     group,
+                     title,
+                     contents):
 
-    user_dic=get_user_dic(userid,userpass,SQLserver_port,
-                          SQLserver_host,database_name)
+    user_dic=get_user_dic(userid,
+                          userpass,
+                          SQLserver_port,
+                          SQLserver_host,
+                          database_name)
+    
     if userpass==user_dic[userid]:
-        df = pd.read_csv('./csv/message.csv', index_col=0)
+        df = pd.read_csv('./database/board.csv',
+                         index_col=0,
+                         encoding="shift-jis")
         columns = ["day",
-                   "userid",
-                   "group",
+                   "to",
+                   "from",
                    "title",
                    "contents",
         ]
@@ -134,14 +173,13 @@ def sql_message_send(userid, userpass, SQLserver_port,
         tmp_day=datetime.date.today()
         day=tmp_day.strftime('%Y-%m-%d')
         tmp_se = pd.Series([day,
-                            userid,
                             "ALL",  # you have to change!
+                            userid,
                             title, 
                             contents,
                            ], index=columns, name=str(df.shape[0]))
         df = df.append(tmp_se)
-        #print(df.head())
-        df.to_csv('./csv/message.csv',encoding="utf-8")
+        df.to_csv('./database/board.csv',encoding="shift-jis")
         return  'OK'
     return 'Not found'
 
@@ -153,17 +191,13 @@ def sql_message_get(userid, userpass, SQLserver_port, SQLserver_host,
                           SQLserver_host,database_name)
     data_list = []
     if userpass==user_dic[userid]:
-        df = pd.read_csv('./csv/message.csv')
+        df = pd.read_csv('./database/board.csv',
+                         encoding="shift-jis")
         for i in range(len(df)):
-            #tstr = df['day'][i] # string of date
-            #tdatetime = datetime.datetime.strptime(tstr, '%Y-%m-%d')
-            #tdate = datetime.date(tdatetime.year, tdatetime.month, tdatetime.day)
-            #delta = now - tdate
-            #if delta.days < 2:
             data_list.append({
                 'day':df['day'][i],#日
-                'userid':df['userid'][i],
-                'group': df['group'][i],
+                'userid':df['from'][i],
+                'group': df['to'][i],
                 'title': df['title'][i],
                 'contents': df['contents'][i],
             })
@@ -172,35 +206,26 @@ def sql_message_get(userid, userpass, SQLserver_port, SQLserver_host,
     
     if len(data_list) > max_messages:
         return data_list[:max_messages]
-    return data_list
-
-    
-
+    return data_list    
 
 def adduser(userid,userpass,SQLserver_port,SQLserver_host,database_name,info):
-    df = pd.read_csv('./csv/user_list.csv', index_col=0)
-    columns = ["username","pass","rname","org","year"]
+    df = pd.read_csv('./database/user_list.csv',
+                     index_col=0,
+                     encoding="shift-jis"
+                     )
+    columns = ["id","password","type","rname","org","year"]
     tmp_se = pd.Series([info['newuser'],
                         info['newpass'],
+                        1,
                         info['rname'],
                         info['org'],
-                        info['year']], index=columns, name=str(df.shape[0]))
+                        info['year']],
+                        index=columns,
+                        name=str(df.shape[0]))
     
     df = df.append(tmp_se)
-    df.to_csv('./csv/user_list.csv',encoding="utf-8")
+    df.to_csv('./database/user_list.csv',encoding="shift-jis")
     
-    columns = ["day",
-               "weight_after",
-               "weight_before",
-               "contents",
-               "time",
-               "moisture",
-               "tenki",
-               "shitsudo"]
-    
-    f = open('./csv/data_'+info['newuser']+'.csv','w')
-    f.write(',day,weight_after,weight_before,contents,time,moisture,tenki,shitsudo\n')
-    f.close()
     return 'OK'
 
 #--Written By Mutsuyo-----------------------------------

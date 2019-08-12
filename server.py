@@ -9,16 +9,21 @@ pip3 install flask
 pip3 install mysql-connector-python
 pip3 import datetime
 """
+
 from flask import Flask,request,render_template,make_response
 import my_function2_demo as my_func
 import datetime
 
 app = Flask(__name__)
 #server host
-server_host='192.168.2.102'
+server_host='localhost'
+#server_host='192.168.2.102'
 #server_host='192.168.56.1'
 #server_host='192.168.0.6'
 #server_host='test-server0701.herokuapp.com'
+
+
+# serverport
 server_port=50000
 server_address=server_host+':'+str(server_port)
 #server_address=server_host
@@ -27,6 +32,8 @@ server_address=server_host+':'+str(server_port)
 SQLserver_host='192.168.0.32'
 SQLserver_port=3306
 database_name='hydration_db'
+sql_userid='sql_azumi'
+sql_userpass='sql_mamiya'
 
 #サーバ管理者リスト
 administrators=['azumi','daiki']
@@ -48,7 +55,8 @@ def hello():
     print("ID:{} LOGIN ".format(userid),end='')
     #connect test
     try:#success
-        hantei=my_func.kakunin(userid,userpass,
+        hantei=my_func.kakunin(userid,
+                               userpass,
                                SQLserver_port,
                                SQLserver_host,
                                database_name)
@@ -132,39 +140,7 @@ def show():
         return resp
     except Exception as error:
         return 'NG'+error.__str__()
-    '''
-    userid = request.cookies.get('user')
-    userpass = request.cookies.get('pass')
-    print("ID:{} GET ".format(userid),end='')
-    try:
-        data=my_func.sql_data_get(userid,
-                                  userid,
-                                  userpass,
-                                  SQLserver_port,
-                                  SQLserver_host,
-                                  database_name)
-        posts=[]
-        for d in reversed(data):
-            posts.append({
-              'date' : str(d[0]),
-              'bweight' : str(d[1]),
-              'aweight' : str(d[2]),
-              'training' : str(d[3]),
-              'period' : str(d[4]),
-              'intake' : str(d[5]),
-              'dehydraterate' : str(d[6]),
-              'dehydrateval' : str(d[1] - d[2])
-            })
-        print('Success')
-        return render_template('main.html', 
-                                title='My Title', 
-                                user=userid, 
-                                posts=posts,
-                                serverhost=server_address)
-    except:
-        print('Fail2')
-        return 'NG'
-    '''
+
 # 情報入力
 @app.route("/enter", methods=["GET","POST"])
 def enter():
@@ -300,31 +276,7 @@ def admin_show():
                     \n or making html error:\n{}'.format(error.__str__())
     else:
         return 'you are not an administrator'
-    ''' 
-    userid = request.cookies.get('user')
-    userpass = request.cookies.get('pass')
-    print("ID:{} GET ".format(userid),end='')
-    if userid in administrators:
-        try:
-            hantei=my_func.kakunin(userid,userpass,SQLserver_port,SQLserver_host,database_name)
-            #resp = make_response(render_template('main.html', 
-                                  title='My Title', 
-                                  user=userid, 
-                                  posts=posts,
-                                  serverhost=server_address))
-            #resp.set_cookie('user', userid)
-            #resp.set_cookie('pass', userpass)
-            #return resp
-            if hantei:
-                return 'Successful!!!!'
-            return 'either id or pass is not match as administrator'
-        except Exception as error:
-            print('Fail')
-            return 'do not connect sql server by your username\ 
-                    \n or making html error:\n{}'.format(error.__str__())
-    else:
-        return 'you are not an administrator'
-    '''
+    
 # 管理者用アプリWatch
 @app.route("/admin/watch", methods=["POST"])
 def admin_watch():# ユーザリスト　ユーザを選び->admin_watch_show()
@@ -392,7 +344,7 @@ def admin_watch_show():
                   'period' : d['time'],#運動時間
                   'intake' : d['moi'],#飲水量
                   'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
-                  'dehydrateval' : str(float(d['wb'])-float(d['wa'])),#脱水量
+                  'dehydrateval' : str(round(float(d['wb'])-float(d['wa']),1)),#脱水量
                   'tenki':d['tenki'],#天気
                   'shitsudo':d['shitsudo']#湿度
                 })
