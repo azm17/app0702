@@ -25,7 +25,9 @@ body {
   background: #456;
   font-family: 'Open Sans', sans-serif;
 }
-
+p {
+  color: white
+}
 .login {
   width: 400px;
   margin: 16px auto;
@@ -107,4 +109,6 @@ body {
 /* Buttons' focus effect */
 .login input[type="submit"]:focus {
   border-color: #05a;
+}
+
 }

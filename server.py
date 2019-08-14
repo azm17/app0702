@@ -85,14 +85,39 @@ def show():
                   'period' : d['time'],#運動時間
                   'intake' : d['moi'],#飲水量
                   'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
-                  'dehydrateval' : str(float(d['wb'])-float(d['wa'])),#脱水量
+                  'dehydrateval' : str(round(float(d['wb'])-float(d['wa']),1)),#脱水量
                   'tenki':str(tenki_dic[str(d['tenki'])]),#天気
                   'shitsudo':d['shitsudo'],#湿度
-                  'temp':d['temp']
+                  'temp':d['temp'],
+                  'dassui1':round(my_func.hakkann_ritu_ex1(d['wb'],d['wa'],d['time']),1),
+                  'necessary':round(my_func.hakkann_ryo(d['wb'],d['wa'],d['moi']),1),
+                  'necessary1':'null',
+                  'w1':round(d['wb']*0.99,1)
                 })
-        
-        latest=posts.pop(0)
-        comment=my_func.generateComment(latest)
+        if len(posts)>0:
+            latest=posts.pop(0)
+            comment=my_func.generateComment(latest)
+        else:
+            latest={
+                  'date' : '今回',#日
+                  'bweight' : 'No data',#運動前体重
+                  'aweight' : 'No data',#運動後体重
+                  'training' : 'No data',#トレーニング内容
+                  'period' : 'No data',#運動時間
+                  'intake' : 'No data',#飲水量
+                  'dehydraterate' : 'No data',#脱水率
+                  'dehydrateval' : 'No data',#脱水量
+                  'tenki':'No data',#天気
+                  'shitsudo':'No data',#湿度
+                  'temp':'No data',
+                  'dassui1':'No data',
+                  'necessary':'No data',
+                  'necessary1':'No data',
+                  'w1':'No data'}
+            comment='''初めまして。このアプリでは、
+                日々のトレーニング後の脱水量を記録していきます。
+                最初のデータを入力しましょう。
+                下の「データ入力」ボタンから結果を登録できます。'''
         messages=my_func.sql_message_get(
                 userid,
                 userpass,
@@ -164,12 +189,12 @@ def enter():
                   'period' : d['time'],#運動時間
                   'intake' : d['moi'],#飲水量
                   'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
-                  'dehydrateval' : str(float(d['wb'])-float(d['wa'])),#脱水量
+                  'dehydrateval' : str(round(float(d['wb'])-float(d['wa']),1)),#脱水量
                   'tenki':str(tenki_dic[str(d['tenki'])]),#天気
                   'shitsudo':d['shitsudo'],#湿度
                   'temp':d['temp'],
                   'dassui1':round(my_func.hakkann_ritu_ex1(d['wb'],d['wa'],d['time']),1),
-                  'necessary':my_func.hakkann_ryo(d['wb'],d['wa'],d['moi']),
+                  'necessary':round(my_func.hakkann_ryo(d['wb'],d['wa'],d['moi']),1),
                   'necessary1':'null',
                   'w1':round(d['wb']*0.99,1)
                 })
@@ -379,7 +404,7 @@ def admin_latest():
                   'period' : d['time'],#運動時間
                   'intake' : d['moi'],#飲水量
                   'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
-                  'dehydrateval' : str(float(d['wb'])-float(d['wa'])),#脱水量
+                  'dehydrateval' : str(round(float(d['wb'])-float(d['wa']),1)),#脱水量
                   'tenki':d['tenki'],#天気
                   'shitsudo':d['shitsudo'],#湿度
                   'username':user_prof[d['username']]['rname']}# ユーザの本名
@@ -577,3 +602,4 @@ if __name__ == "__main__":
             port=server_port,
             threaded=True
             )
+

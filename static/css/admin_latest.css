@@ -42,6 +42,9 @@ h3 {
   /*background: #02badd;*/
   color: white
 }
+footer {
+	color: white
+}
 #output {
 	overflow: scroll;
 	white-space:nowrap;
@@ -69,4 +72,8 @@ h3 {
 	width: 100%;
 	background: #c6e6ee;
 	color:white;
+}
+p {
+	align-items: center;
+	color: white
 }

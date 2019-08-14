@@ -29,6 +29,14 @@ input {
 	border-style: none;
 	border-bottom: solid 1px silver;
 }
+p {
+	color: white;
+}
+
+}
+.pfooter {
+	color: white;
+}
 
 .center {
 	text-align: center;

@@ -119,6 +119,11 @@ p {
   background-size: 80%;
 }
 
+}
+footer {
+  color: white
+}
+
 @media screen and (min-width:500px) {
 .child {
 width: 100px;

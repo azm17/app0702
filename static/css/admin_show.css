@@ -41,6 +41,11 @@ h3 {
   color: white
 }
 
+}
+p {
+	color: white
+}
+
 #output {
 	overflow: scroll;
 	white-space:nowrap;

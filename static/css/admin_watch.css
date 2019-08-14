@@ -30,6 +30,9 @@ li {
 a {
   color: white;
 }
+p {
+  color: white;
+}
 .button {
   font-size:1.2em;
   font-weight: bold;
@@ -43,4 +46,6 @@ a {
 }
 .child {
  width: 20%;
+}
+
 }

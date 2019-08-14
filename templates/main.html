@@ -112,10 +112,10 @@
     <br><br>
 	<h2>過去の結果</h2>
 	<table id="output">
-		<th class="sticky">日付</th><th class="sticky">トレーニング内容</th><th class="sticky">運動前体重(kg)</th><th class="sticky">運動後体重(kg)</th><th class="sticky">脱水量(L)</th><th class="sticky">脱水率(%)</th><th class="sticky">水分摂取量</th><th class="sticky">運動時間(h)</th>
+		<th class="sticky">日付</th><th class="sticky">トレーニング</th><th class="sticky">運動前体重</th><th class="sticky">運動後体重</th><th class="sticky">脱水量</th><th class="sticky">脱水率</th><th class="sticky">水分摂取量</th><th class="sticky">運動時間</th>
 		{% for post in posts %}
     	<tr>
-    	 <td>{{post.date}}</td> <td>{{post.training}}</td> <td>{{post.bweight}}</td> <td>{{post.aweight}}</td> <td>{{post.dehydrateval}}</td> <td>{{post.dehydraterate}}</td> <td>{{post.intake}}</td> <td>{{post.period}}</td>
+    	 <td>{{post.date}}</td> <td>{{post.training}}</td> <td>{{post.bweight}} kg</td> <td>{{post.aweight}} kg</td> <td>{{post.dehydrateval}} L</td> <td>{{post.dehydraterate}} %</td> <td>{{post.intake}} L</td> <td>{{post.period}} h</td>
     	</tr>
     	{% endfor %}
 	</table>
@@ -126,4 +126,8 @@
 			<a href="http://{{serverhost}}/">ログアウト</a>
 		</nav>
 	</div>
+	<footer>
+<p>COPYRIGHT &#169; azumi, kenshin and daiki ALL RIGHTS RESERVED.	</p>
+</footer>
 </body>
+</html>
