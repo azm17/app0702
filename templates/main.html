@@ -12,136 +12,107 @@
 		<br>&nbsp;&nbsp;&nbsp;&nbsp;Let's hydrate！</h2>
 	<div><br>
 		<div>
-		<h3>{{rname}}さん，こんにちわ。</h3>
-		<h2>最新の結果</h2>
+		<h3>{{rname}}さん、こんにちわ。</h3>
+		<h2>{{latest.date}}の結果</h2>
 		</div>
-		<table id="output" width="100%">
+		<table id="output" class="setwidth">
 		<tr>
-			<th>
-			日付
-			</th>
-			<th>
-			トレーニング内容
-			</th>
+			<th>トレーニング内容</th>
+			<th>天気</th>
 		<tr>
 			</tr>
 			<td align="center">
-			{{latest.date}}
-			</td>
-			<td align="center">
-			{{latest.training}}
-			</td>
-		</tr>
-		<tr>
-			<th>
-			日付
-			</th>
-			<th>
-			トレーニング内容
-			</th>
-		<tr>
-		</tr>
-			<td align="center">
-			{{latest.date}}
-			</td>
-			<td align="center">
-			{{latest.training}}
-			</td>
-		</tr>
-		<tr>
-			<th>
-			気温(°C)
-			</th>
-			<th>
-			運動前体重(kg)
-			</th>
-		</tr>
-		<tr>
-			<td align="center">
 			{{latest.training}}
 			</td>
 			<td align="center">
-			{{latest.bweight}}
+			{{latest.tenki}}
 			</td>
 		</tr>
 		<tr>
-			<th>
-			運動後体重(kg)
-			</th>
-			<th>
-			脱水率(%)
-			</th>
-		</tr>
+			<th>気温</th>
+			<th>湿度</th>
 		<tr>
+		</tr>
 			<td align="center">
-			{{latest.aweight}}
+			{{latest.temp}} ℃
 			</td>
 			<td align="center">
-			{{latest.dehydraterate}}
+			{{latest.shitsudo}} %
 			</td>
 		</tr>
 		<tr>
-			<th>
-			飲水量(L)
-			</th>
-			<th>
-			トレーニング時間(h)
-			</th>
+			<th>運動前体重</th>
+			<th>運動後体重</th>
 		</tr>
 		<tr>
 			<td align="center">
-			{{latest.intake}}
+			{{latest.bweight}} kg
 			</td>
 			<td align="center">
-			{{latest.period}}
-			</td>
-		</tr>
-		<tr>
-			<th>
-			トレーニング中<br>必要飲水量(L)
-			</th>
-			<th>
-			1%脱水量(g)
-			</th>
-		</tr>
-		<tr>
-			<td align="center">
-			{{latest.training}}
-			</td>
-			<td align="center">
-			{{latest.training}}
+			{{latest.aweight}} kg
 			</td>
 		</tr>
 		<tr>
-			<th>
-			1%脱水体重(kg)
-			</th>
-			<th>
-			トレーニング中<br>必要飲水量(L)
-			</th>
+			<th>飲水量</th>
+			<th>脱水率</th>
 		</tr>
 		<tr>
 			<td align="center">
-			{{latest.training}}
+			{{latest.intake}} L
 			</td>
 			<td align="center">
-			{{latest.training}}
+			{{latest.dehydraterate}} %
+			</td>
+		</tr>
+		<tr>
+			<th>必要飲水量</th>
+			<th>トレーニング時間</th>
+		</tr>
+		<tr>
+			<td align="center">
+			{{latest.necessary}} L
+			</td>
+			<td align="center">
+			{{latest.period}} h
+			</td>
+		</tr>
+		<tr>
+			<th>1%脱水体重</th>
+			<th>必要飲水量(1%)</th>
+		</tr>
+		<tr>
+			<td align="center">
+			{{latest.w1}} kg 
+			</td>
+			<td align="center">
+			{{latest.necessary1}} L
 			</td>
 		</tr>
 		</table>
 		<div>
-		<h4>{{comment}}</h4>
-	   <img src="./static/img/suzuki1.png" width="50%" alt="鈴木さん1" title="test">
+		<div class="balloon5">
+		  <div class="faceicon">
+		    <img src="./static/img/suzuki1.png" alt="鈴木さん1" title="test">
+		  </div>
+		  <div class="chatting">
+		    <div class="says">
+		      <p>{{comment}}</p>
+		    </div>
+		  </div>
 		</div>
 	<br>
 	<h3>皆さんへの連絡</h3>
 	{% for text in texts%}
-    <li>[{{text.day}}]{{text.title}}：<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{text.contents}}</li>
+	<div class="box30 setwidth2">
+		<div class="box-title">[{{text.day}}] {{text.title}}
+		</div>
+    <p>{{text.contents}}</p>
+    </div>
     {% endfor %}
     <br><br>
 	<h2>過去の結果</h2>
 	<table id="output">
-		<th>日付</th><th>トレーニング内容</th><th>運動前体重(kg)</th><th>運動後体重(kg)</th><th>脱水量(L)</th><th>脱水率(%)</th><th>水分摂取量</th><th>運動時間(h)</th>
+		<th class="sticky">日付</th><th class="sticky">トレーニング内容</th><th class="sticky">運動前体重(kg)</th><th class="sticky">運動後体重(kg)</th><th class="sticky">脱水量(L)</th><th class="sticky">脱水率(%)</th><th class="sticky">水分摂取量</th><th class="sticky">運動時間(h)</th>
 		{% for post in posts %}
     	<tr>
     	 <td>{{post.date}}</td> <td>{{post.training}}</td> <td>{{post.bweight}}</td> <td>{{post.aweight}}</td> <td>{{post.dehydrateval}}</td> <td>{{post.dehydraterate}}</td> <td>{{post.intake}}</td> <td>{{post.period}}</td>

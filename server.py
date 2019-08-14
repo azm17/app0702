@@ -16,7 +16,7 @@ import datetime
 
 app = Flask(__name__)
 #server host
-server_host='localhost'
+server_host='192.168.0.15'
 #server_host='192.168.2.102'
 #server_host='192.168.56.1'
 #server_host='192.168.0.6'
@@ -35,6 +35,7 @@ database_name='hydration_db'
 sql_userid='sql_azumi'
 sql_userpass='sql_mamiya'
 
+tenki_dic={'1':'晴れ','2':'曇り','3':'雨','4':'雪'}
 # 一般ユーザーログイン画面送信
 @app.route("/")
 def entry():
@@ -85,16 +86,17 @@ def show():
                   'intake' : d['moi'],#飲水量
                   'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
                   'dehydrateval' : str(float(d['wb'])-float(d['wa'])),#脱水量
-                  'tenki':d['tenki'],#天気
-                  'shitsudo':d['shitsudo']#湿度
+                  'tenki':str(tenki_dic[str(d['tenki'])]),#天気
+                  'shitsudo':d['shitsudo'],#湿度
+                  'temp':d['temp']
                 })
+        
         latest=posts.pop(0)
-        comment='いい感じです．この調子頑張りましょう!'
+        comment=my_func.generateComment(latest)
         messages=my_func.sql_message_get(
                 userid,
                 userpass,
-                max_messages = 5
-              )
+                max_messages = 3)
         
         texts=[]
         for d in messages:
@@ -144,8 +146,8 @@ def enter():
         shitsudo= float(request.form['sitsu'])
         my_func.sql_data_send(userid,#ログインするユーザ
                               userpass,#ログインするユーザのパス
-                              weight_after,
                               weight_before,
+                              weight_after,
                               contents,time,
                               moisture,tenki,
                               shitsudo)
@@ -163,16 +165,22 @@ def enter():
                   'intake' : d['moi'],#飲水量
                   'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
                   'dehydrateval' : str(float(d['wb'])-float(d['wa'])),#脱水量
-                  'tenki':d['tenki'],#天気
-                  'shitsudo':d['shitsudo']#湿度
+                  'tenki':str(tenki_dic[str(d['tenki'])]),#天気
+                  'shitsudo':d['shitsudo'],#湿度
+                  'temp':d['temp'],
+                  'dassui1':round(my_func.hakkann_ritu_ex1(d['wb'],d['wa'],d['time']),1),
+                  'necessary':my_func.hakkann_ryo(d['wb'],d['wa'],d['moi']),
+                  'necessary1':'null',
+                  'w1':round(d['wb']*0.99,1)
                 })
+        
         latest=posts.pop(0)
-        comment='いい感じです．この調子頑張りましょう!'
+        comment=my_func.generateComment(latest)
         messages=my_func.sql_message_get(
                 userid,
                 userpass,
-                max_messages = 5
-              )
+                max_messages=3)
+        
         texts=[]
         for d in messages:
             texts.append({
@@ -180,8 +188,8 @@ def enter():
                 'rname': user_prof[d['userid']]['rname'],
                 'group': d['group'],
                 'title': d['title'],
-                'contents': d['contents']}
-            )
+                'contents': d['contents']})
+        
         return render_template('main.html', 
                                title='My Title',
                                user=userid,
@@ -192,7 +200,7 @@ def enter():
                                rname=user_prof[userid]['rname'],
                                serverhost=server_address)
     except Exception as error:
-        return 'error:'+error.__str__()
+        return 'error: '+error.__str__()
 
 # for administration
 #全てのユーザのプロフィールを取得：本名，組織，年度
@@ -212,8 +220,7 @@ def admin_entry():
 def admin_show():
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
-    #print('aaaaaaaaa',my_func.admin_kakunin(admin,adminpass))
-    
+        
     if admin == '' or adminpass == '':
         admin = request.form['user']
         adminpass = request.form['pass']
@@ -222,10 +229,7 @@ def admin_show():
         pass
     else:
         return 'admin_kakunin error'
-    
-    #user情報，初めの読み込み
-    #user_prof=my_func.sql_ALLuser_profile()
-    
+        
     posts=[]
     print("ID:{} GET ".format(admin),end='')
     if admin == '' or adminpass == '':
@@ -286,8 +290,7 @@ def admin_watch():# ユーザリスト　ユーザを選び->admin_watch_show()
     resp = make_response(render_template(
             'admin_watch.html',
             serverhost=server_address,
-            posts=posts)
-            )
+            posts=posts))
     
     return resp
 
@@ -296,7 +299,7 @@ def admin_watch():# ユーザリスト　ユーザを選び->admin_watch_show()
 def admin_watch_show():
     admin = request.cookies.get('user')# クッキーを保存
     adminpass = request.cookies.get('pass')# クッキーを保存
-    user_prof=my_func.sql_ALLuser_profile()
+    user_prof = my_func.sql_ALLuser_profile()
     
     if my_func.admin_kakunin(admin, adminpass):
         pass

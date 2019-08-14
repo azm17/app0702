@@ -79,8 +79,8 @@ def get_admin():
 
 def sql_data_send(user_name,
                   user_pass,
-                  weight_after,
                   weight_before,
+                  weight_after,
                   contents,
                   time,
                   moisture,
@@ -107,13 +107,13 @@ def sql_data_send(user_name,
                    ]
         tmp_se = pd.Series([user_name,
                             day,
-                            weight_after,
-                            weight_before,
+                            tenki,
+                            shitsudo,
                             contents,
                             time,
-                            moisture,
-                            tenki,
-                            shitsudo], index=columns, name=str(df.shape[0]))
+                            weight_before,
+                            weight_after,
+                            moisture], index=columns, name=str(df.shape[0]))
         df = df.append(tmp_se)
         df.to_csv('./database/data.csv',encoding="shift-jis")
     return  'OK'
@@ -136,7 +136,8 @@ def sql_data_get(user_nm):
                           'time':df['time'][i],#時間
                           'moi':df['water'][i],#飲水量
                           'tenki':df['weather'][i],#天気
-                          'shitsudo':df['humidity'][i]})#湿度
+                          'shitsudo':df['humidity'][i],
+                          'temp':'null'})#湿度
     
     return data_list
 
@@ -265,3 +266,19 @@ def hakkann_ryo_ex1(wb,water):#運動時間あたり-1%発汗量(飲水必要量
     return z
 
 #--Written By Mutsuyo-----------------------------------
+
+def generateComment(data):
+    sentence='今日もトレーニングお疲れ様です。'
+    if 0<=data['dehydraterate']:
+        sentence+='よく水分補給できています。この調子で水分補給しましょう！'
+    elif -1.0<data['dehydraterate']<0:
+        sentence+='きちんと水分補給しましょう！'
+    elif -2.0<=data['dehydraterate']<=-1.0:
+    #elif -1.0 < data['dehydraterate']:
+        sentence+='水分補給もう少し！'
+    elif data['dehydraterate']<-2.0:
+        sentence+='水分補給増やそう！'
+    else:
+        sentence='ERROR'
+    
+    return sentence
