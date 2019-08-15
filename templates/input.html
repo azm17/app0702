@@ -31,9 +31,20 @@
 				<td>天気</td>
 				<td>
 					<select name="tenki">
-					<option value="1">晴れ</option>
-					<option value="2">曇り</option>
-					<option value="3">雨</option>
+					{% for i in weather %}
+					<option value="{{i.num}}">{{i.moji}}</option>
+					{% endfor %}
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>温度(℃)</td>
+				<td>
+					<select name="temp">
+						<option value="">-</option>
+						{% for i in templist %}
+						<option value="{{i}}">{{i}}</option>
+						{% endfor %}
 					</select>
 				</td>
 			</tr>

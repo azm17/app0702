@@ -79,13 +79,14 @@ def get_admin():
 
 def sql_data_send(user_name,
                   user_pass,
-                  weight_before,
-                  weight_after,
-                  contents,
+                  bweight,
+                  aweight,
+                  training,
                   time,
-                  moisture,
-                  tenki,
-                  shitsudo):
+                  water,
+                  weather,
+                  humidity,
+                  temp):
     
     user_dic=get_user_dic()
     if user_pass==user_dic[user_name]:
@@ -103,17 +104,19 @@ def sql_data_send(user_name,
                    "time",
                    "bweight",
                    "aweight",
-                   "water"                   
-                   ]
+                   "water",
+                   "temp"]
+        
         tmp_se = pd.Series([user_name,
                             day,
-                            tenki,
-                            shitsudo,
-                            contents,
+                            weather,
+                            humidity,
+                            training,
                             time,
-                            weight_before,
-                            weight_after,
-                            moisture], index=columns, name=str(df.shape[0]))
+                            bweight,
+                            aweight,
+                            water,
+                            temp], index=columns, name=str(df.shape[0]))
         df = df.append(tmp_se)
         df.to_csv('./database/data.csv',encoding="shift-jis")
     return  'OK'
@@ -137,7 +140,7 @@ def sql_data_get(user_nm):
                           'moi':df['water'][i],#飲水量
                           'tenki':df['weather'][i],#天気
                           'shitsudo':df['humidity'][i],
-                          'temp':'null'})#湿度
+                          'temp':df['temp'][i]})#湿度
     
     return data_list
 
@@ -163,7 +166,8 @@ def sql_data_get_latest_all():
                               'moi':df['water'][i],#飲水量
                               'tenki':df['weather'][i],#天気
                               'shitsudo':df['humidity'][i],
-                              'username':u_name})#湿度
+                              'username':u_name,
+                              'temp':df['temp'][i]})#湿度
                 data_list.sort(key=lambda x:x['day'])
                 data_list.reverse()
     

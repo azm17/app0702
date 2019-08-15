@@ -78,7 +78,7 @@
 		</tr>
 		<tr>
 			<th>1%脱水体重</th>
-			<th>必要飲水量(1%)</th>
+			<th>1%脱水必要飲水量</th>
 		</tr>
 		<tr>
 			<td align="center">
@@ -112,10 +112,30 @@
     <br><br>
 	<h2>過去の結果</h2>
 	<table id="output">
-		<th class="sticky">日付</th><th class="sticky">トレーニング</th><th class="sticky">運動前体重</th><th class="sticky">運動後体重</th><th class="sticky">脱水量</th><th class="sticky">脱水率</th><th class="sticky">水分摂取量</th><th class="sticky">運動時間</th>
+		<th class="sticky">日付</th>
+		<th class="sticky">天気</th>
+		<th class="sticky">気温</th>
+		<th class="sticky">湿度</th>
+		<th class="sticky">トレーニング</th>
+		<th class="sticky">運動前体重</th>
+		<th class="sticky">運動後体重</th>
+		<th class="sticky">飲水量</th>
+		<th class="sticky">脱水量</th>
+		<th class="sticky">脱水率</th>
+		<th class="sticky">運動時間</th>
 		{% for post in posts %}
     	<tr>
-    	 <td>{{post.date}}</td> <td>{{post.training}}</td> <td>{{post.bweight}} kg</td> <td>{{post.aweight}} kg</td> <td>{{post.dehydrateval}} L</td> <td>{{post.dehydraterate}} %</td> <td>{{post.intake}} L</td> <td>{{post.period}} h</td>
+    	 <td>{{post.date}}</td>
+    	 <td>{{post.tenki}}</td>
+    	 <td>{{post.temp}} ℃</td>
+    	 <td>{{post.shitsudo}} %</td>
+    	 <td>{{post.training}}</td>
+    	 <td>{{post.bweight}} kg</td>
+    	 <td>{{post.aweight}} kg</td>
+    	 <td>{{post.intake}} L</td>
+    	 <td>{{post.dehydrateval}} L</td>
+    	 <td>{{post.dehydraterate}} %</td>
+    	 <td>{{post.period}} h</td>
     	</tr>
     	{% endfor %}
 	</table>

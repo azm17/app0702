@@ -35,7 +35,7 @@ database_name='hydration_db'
 sql_userid='sql_azumi'
 sql_userpass='sql_mamiya'
 
-tenki_dic={'1':'晴れ','2':'曇り','3':'雨','4':'雪'}
+tenki_dic={'1':'🌞️','2':'☁️','3':'🌧️','4':'❄️'}
 # 一般ユーザーログイン画面送信
 @app.route("/")
 def entry():
@@ -53,12 +53,22 @@ def hello():
     hantei=my_func.kakunin(userid,userpass)
     print("ID:{} TRY LOGIN "+str(hantei).format(userid))
     if hantei:# lonin success
+        templist=[round(i/5-10,1) for i in range(276)]
+        #11~3月のみ雪マークを追加
+        weather=[{'num':'{}'.format(i),'moji':tenki_dic[i]}
+                    for i in tenki_dic.keys()
+                        if not(4<=datetime.datetime.today().month<=10) and i=='4' 
+                            or i=='1' or i=='2' or i=='3']
+
         return render_template('hello.html', 
                                title='flask test', 
                                name=userid,
+                               templist=templist,
+                               weather=weather,
                                serverhost=server_address)
     else:# login fail
-        return 'either id or pass is not match'
+        sentence='接続できません。最初からやり直してください。'
+        return make_response(render_template('error.html',sentence=sentence))
 
 # 一般ユーザーの結果（表）画面
 @app.route("/show", methods=["POST"])
@@ -70,8 +80,10 @@ def show():
     if my_func.kakunin(userid,userpass):
         pass
     else:
-        return 'kakunin error'
-    
+        sentence='IDまたはPASSが違います。正しいパスワードを入力してください。'
+        resp = make_response(render_template('error.html',
+                                         sentence=sentence))
+        return resp  
     print("ID:{} GET ".format(userid),end='')
     try:
         data=my_func.sql_data_get(userid)
@@ -117,7 +129,8 @@ def show():
             comment='''初めまして。このアプリでは、
                 日々のトレーニング後の脱水量を記録していきます。
                 最初のデータを入力しましょう。
-                下の「データ入力」ボタンから結果を登録できます。'''
+                下の「データ入力」ボタンから結果を登録できます。
+                また、「皆さんへの連絡」は、このアプリを利用している全員向けのコメントです。'''
         messages=my_func.sql_message_get(
                 userid,
                 userpass,
@@ -133,6 +146,7 @@ def show():
                 'contents': d['contents']}
             )
         print('Success')
+        
         resp = make_response(render_template('main.html',
                                              title='My Title',
                                              user=userid,
@@ -146,7 +160,8 @@ def show():
         resp.set_cookie('pass', userpass)
         return resp
     except Exception as error:
-        return 'NG: '+error.__str__()
+        sentence='NG: '+error.__str__()
+        return make_response(render_template('error.html',sentence=sentence))
 
 # 情報入力
 @app.route("/enter", methods=["GET","POST"])
@@ -158,7 +173,8 @@ def enter():
     if my_func.kakunin(userid,userpass):
         pass
     else:
-        return 'kakunin error'
+        sentence='接続できません。最初の画面からやり直してください。'
+        return make_response(render_template('error.html',sentence=sentence))
     
     print("ID:{} GET ".format(userid))
     try:
@@ -169,13 +185,15 @@ def enter():
         moisture= float(request.form['moi'])
         tenki= int(request.form['tenki'])
         shitsudo= float(request.form['sitsu'])
+        temp=float(request.form['temp'])
         my_func.sql_data_send(userid,#ログインするユーザ
                               userpass,#ログインするユーザのパス
                               weight_before,
                               weight_after,
                               contents,time,
                               moisture,tenki,
-                              shitsudo)
+                              shitsudo,
+                              temp)
         
         data=my_func.sql_data_get(userid)
         
@@ -225,7 +243,9 @@ def enter():
                                rname=user_prof[userid]['rname'],
                                serverhost=server_address)
     except Exception as error:
-        return 'error: '+error.__str__()
+        sentence='ERROR： 情報を送信できませんでした。すべての情報を正しく入力しましたか？'+'(detail: '+error.__str__()+')'
+
+        return make_response(render_template('error.html',sentence=sentence))
 
 # for administration
 #全てのユーザのプロフィールを取得：本名，組織，年度
@@ -253,12 +273,14 @@ def admin_show():
     if my_func.admin_kakunin(admin, adminpass):
         pass
     else:
-        return 'admin_kakunin error'
+        sentence='管理者用の画面です。正しいIDとPASSを入力してください。'
+        return make_response(render_template('error.html',sentence=sentence))
         
     posts=[]
     print("ID:{} GET ".format(admin),end='')
     if admin == '' or adminpass == '':
-        return 'NG: None'
+        sentence='正しいIDとPASSを入力してください。'
+        return make_response(render_template('error.html',sentence=sentence))
     administrators=my_func.get_admin()
     if admin in administrators: 
         try:
@@ -274,13 +296,16 @@ def admin_show():
             
             if hantei:
                 return resp
-            return 'either id or pass is not match as administrator'
+            sentence='正しいIDとPASSを入力してください。'
+            return make_response(render_template('error.html',sentence=sentence))
         except Exception as error:
             print('Fail')
-            return 'do not connect sql server by your username \
+            sentence='do not connect sql server by your username \
                     \n or making html error:\n{}'.format(error.__str__())
+            return make_response(render_template('error.html',sentence=sentence))
     else:
-        return 'you are not an administrator'
+        sentence='you are not an administrator'
+        return make_response(render_template('error.html',sentence=sentence))
     
 # 管理者用アプリWatch
 @app.route("/admin/watch", methods=["POST"])
@@ -292,17 +317,21 @@ def admin_watch():# ユーザリスト　ユーザを選び->admin_watch_show()
     if my_func.admin_kakunin(admin, adminpass):
         pass
     else:
-        return 'admin_kakunin error'
+        sentence='初めからやり直してください。'
+        return make_response(render_template('error.html',sentence=sentence))
     
     if admin == '' or adminpass == '':
         # 不正アクセス（クッキーが空など，ユーザ名，パスワード未設定）
-        return 'NG: cannot access /watch'
+        sentence='NG: cannot access /watch'
+        return make_response(render_template('error.html',sentence=sentence))
     
     try:
         my_func.kakunin(admin,adminpass)
     except Exception as error:
         #接続失敗，SQLに接続できないなど
-        return 'ERORR: '+error.__str__()
+        sentence='ERORR: '+error.__str__()
+        return make_response(render_template('error.html',sentence=sentence))
+    
     
     posts= [{'name':user_prof[name]['rname'],
              'org':user_prof[name]['org'],
@@ -329,7 +358,8 @@ def admin_watch_show():
     if my_func.admin_kakunin(admin, adminpass):
         pass
     else:
-        return 'admin_kakunin error'
+        sentence='初めからやり直してください。'
+        return make_response(render_template('error.html',sentence=sentence))
     
     if admin != '' and adminpass != '':
         #SQLサーバ接続テスト：ユーザ名，パスワードの整合性の確認
@@ -351,7 +381,8 @@ def admin_watch_show():
                   'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
                   'dehydrateval' : str(round(float(d['wb'])-float(d['wa']),1)),#脱水量
                   'tenki':d['tenki'],#天気
-                  'shitsudo':d['shitsudo']#湿度
+                  'shitsudo':d['shitsudo'],#湿度
+                  'temp':d['temp']
                 })
             print('Success')
             
@@ -373,7 +404,8 @@ def admin_watch_show():
             return error.__str__()
     else:
         # 不正アクセス（クッキーが空など，ユーザ名，パスワード未設定）
-        return 'NG: cannot access watch/show'
+        sentence='NG: cannot access watch/show'
+        return make_response(render_template('error.html',sentence=sentence))
 
 # 管理者用アプリNew!
 @app.route("/admin/latest", methods=["POST"])
@@ -383,12 +415,14 @@ def admin_latest():
     user_prof=my_func.sql_ALLuser_profile()
     
     if admin=='' or adminpass=='':
-        return 'cannot access!'
+        sentence='cannot access!'
+        return make_response(render_template('error.html',sentence=sentence))
     
     if my_func.admin_kakunin(admin, adminpass):
         pass
     else:
-        return 'admin_kakunin error'
+        sentence='初めからやり直してください。'
+        return make_response(render_template('error.html',sentence=sentence))
     
     try:
         print('Success')
@@ -405,8 +439,9 @@ def admin_latest():
                   'intake' : d['moi'],#飲水量
                   'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
                   'dehydrateval' : str(round(float(d['wb'])-float(d['wa']),1)),#脱水量
-                  'tenki':d['tenki'],#天気
+                  'tenki':tenki_dic[str(d['tenki'])],#天気
                   'shitsudo':d['shitsudo'],#湿度
+                  'temp':d['temp'],
                   'username':user_prof[d['username']]['rname']}# ユーザの本名
                 )
             print('Success')
@@ -418,9 +453,11 @@ def admin_latest():
                     serverhost=server_address)
             
         except Exception as error:
-            return 'ERROR1: '+error.__str__()
+            sentence='ERROR1: '+error.__str__()
+            return make_response(render_template('error.html',sentence=sentence))
     except Exception as error:
-            return 'ERROR2: '+error.__str__()
+            sentence='ERROR2: '+error.__str__()
+            return make_response(render_template('error.html',sentence=sentence))
 
 # 管理者用アプリRegister，新規ユーザー追加
 @app.route("/admin/register", methods=["GET","POST"])
@@ -431,7 +468,8 @@ def admin_register():
     if my_func.admin_kakunin(admin, adminpass):
         pass
     else:
-        return 'admin_kakunin error'
+        sentence='初めからやり直してください。'
+        return make_response(render_template('error.html',sentence=sentence))
     
     if len(admin)==0 or len(adminpass)==0:
         return 'NG1: cannot access'
@@ -461,7 +499,8 @@ def admin_register():
           }
     if len(request.form['newuser'])==0 or len(request.form['newpass'])==0 or \
         len(request.form['rname'])==0 or len(request.form['org'])==0:
-        return 'NG : Fill in the blank!'
+        sentence='NG : Fill in the blank!: すべての空欄を埋めてください。'
+        return make_response(render_template('error.html',sentence=sentence))
     try:
         hantei=my_func.adduser(admin,
                                adminpass,
