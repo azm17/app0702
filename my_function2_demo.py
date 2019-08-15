@@ -151,6 +151,7 @@ def sql_data_get_latest_all():
     for u_name in user_dic.keys():
         tmp_df = pd.read_csv('./database/data.csv',
                          encoding="shift-jis")
+        
         df=tmp_df[tmp_df['id'] ==u_name].reset_index()
         for i in range(len(df)):
             tstr = df['day'][i] # string of date
@@ -168,6 +169,7 @@ def sql_data_get_latest_all():
                               'shitsudo':df['humidity'][i],
                               'username':u_name,
                               'temp':df['temp'][i]})#湿度
+                
                 data_list.sort(key=lambda x:x['day'])
                 data_list.reverse()
     
@@ -236,7 +238,7 @@ def adduser(admin,adminpass,info):
     columns = ["id","password","type","rname","org","year"]
     tmp_se = pd.Series([info['newuser'],
                         info['newpass'],
-                        1,
+                        info['type'],
                         info['rname'],
                         info['org'],
                         info['year']],
@@ -247,6 +249,30 @@ def adduser(admin,adminpass,info):
     df.to_csv('./database/user_list.csv',encoding="shift-jis")
     
     return 'OK'
+
+def sql_data_per_day(day):
+    #user_name ←のアカウントを使って
+    #user_nm ←のデータを取得
+    data_list=[]
+    tmp_df = pd.read_csv('./database/data.csv',
+                     index_col=0,
+                     encoding="shift-jis")
+    
+    df=tmp_df[tmp_df['day'] ==day].reset_index()
+    data_list=[]
+    for i in range(len(df)):
+        data_list.append({'day':df['day'][i],#日
+                          'wa':df['aweight'][i],#運動後体重
+                          'wb':df['bweight'][i],#運動前体重
+                          'contents':df['training'][i],#トレーニング内容
+                          'time':df['time'][i],#時間
+                          'moi':df['water'][i],#飲水量
+                          'tenki':df['weather'][i],#天気
+                          'shitsudo':df['humidity'][i],
+                          'temp':df['temp'][i]})#湿度
+    
+    return data_list
+
 
 #--Written By Mutsuyo-----------------------------------
 def dassui_ritu(wb,wa):#脱水率

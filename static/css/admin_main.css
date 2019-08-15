@@ -61,7 +61,11 @@ h2 {
   background-size: 80%;
 }
 .child2 {
-  background-image: url("../img/tty.jpg");
+  background: white;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-image: url("../img/tty.png");
+  background-size: 65%;
 }
 p {
   transform: translate(0px,65px);

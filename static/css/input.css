@@ -50,3 +50,12 @@ p {
 	padding: 5px 20px;
 	border-style: none;
 }
+img {
+width: 100%;
+}
+
+@media screen and (min-width:500px) {
+img {
+width: 400px;
+}
+}

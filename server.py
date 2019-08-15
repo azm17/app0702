@@ -4,6 +4,7 @@ Created on Sat Jun 29 17:56:33 2019
 
 @author: Azumi Mamiya 
          Daiki Miyagawa
+         Kenshin Iwakura
 
 pip3 install flask
 pip3 install mysql-connector-python
@@ -13,6 +14,8 @@ pip3 import datetime
 from flask import Flask,request,render_template,make_response
 import my_function2_demo as my_func
 import datetime
+import matplotlib.pyplot as plt
+
 
 app = Flask(__name__)
 #server host
@@ -51,7 +54,9 @@ def hello():
     userid = request.cookies.get('user')
     userpass = request.cookies.get('pass')
     hantei=my_func.kakunin(userid,userpass)
-    print("ID:{} TRY LOGIN "+str(hantei).format(userid))
+    user_prof=my_func.sql_ALLuser_profile()
+    
+    print("ID:{} TRY LOGIN ".format(userid)+str(hantei))
     if hantei:# lonin success
         templist=[round(i/5-10,1) for i in range(276)]
         #11~3月のみ雪マークを追加
@@ -59,10 +64,10 @@ def hello():
                     for i in tenki_dic.keys()
                         if not(4<=datetime.datetime.today().month<=10) and i=='4' 
                             or i=='1' or i=='2' or i=='3']
-
+        
         return render_template('hello.html', 
                                title='flask test', 
-                               name=userid,
+                               name=user_prof[userid]['rname'],
                                templist=templist,
                                weather=weather,
                                serverhost=server_address)
@@ -89,6 +94,9 @@ def show():
         data=my_func.sql_data_get(userid)
         posts=[]
         for d in reversed(data):
+            neccessary1_tmp=round(float(d['wb']*0.99)-float(d['wa'])+float(d['moi']),1)
+            if neccessary1_tmp<=0:
+                neccessary1_tmp=0
             posts.append({
                   'date' : d['day'],#日
                   'bweight' : d['wb'],#運動前体重
@@ -103,7 +111,7 @@ def show():
                   'temp':d['temp'],
                   'dassui1':round(my_func.hakkann_ritu_ex1(d['wb'],d['wa'],d['time']),1),
                   'necessary':round(my_func.hakkann_ryo(d['wb'],d['wa'],d['moi']),1),
-                  'necessary1':'null',
+                  'necessary1':neccessary1_tmp,
                   'w1':round(d['wb']*0.99,1)
                 })
         if len(posts)>0:
@@ -199,6 +207,9 @@ def enter():
         
         posts=[]
         for d in reversed(data):
+            neccessary1_tmp=round(float(d['wb']*0.99)-float(d['wa'])+float(d['moi']),1)
+            if neccessary1_tmp<=0:
+                neccessary1_tmp=0
             posts.append({
                   'date' : d['day'],#日
                   'bweight' : d['wb'],#運動前体重
@@ -213,7 +224,7 @@ def enter():
                   'temp':d['temp'],
                   'dassui1':round(my_func.hakkann_ritu_ex1(d['wb'],d['wa'],d['time']),1),
                   'necessary':round(my_func.hakkann_ryo(d['wb'],d['wa'],d['moi']),1),
-                  'necessary1':'null',
+                  'necessary1':neccessary1_tmp,
                   'w1':round(d['wb']*0.99,1)
                 })
         
@@ -273,7 +284,7 @@ def admin_show():
     if my_func.admin_kakunin(admin, adminpass):
         pass
     else:
-        sentence='管理者用の画面です。正しいIDとPASSを入力してください。'
+        sentence='管理者用のログイン画面です。正しいIDとPASSを入力してください。'
         return make_response(render_template('error.html',sentence=sentence))
         
     posts=[]
@@ -464,6 +475,7 @@ def admin_latest():
 def admin_register():
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
+    user_prof=my_func.sql_ALLuser_profile()
     
     if my_func.admin_kakunin(admin, adminpass):
         pass
@@ -486,25 +498,28 @@ def admin_register():
                         text='',
                         serverhost=server_address,
                         posts=posts,
-                        year=datetime.datetime.now().year)
-                )
+                        year=datetime.datetime.now().year))
         
         return resp
     
     info={'newuser':request.form['newuser'],
           'newpass':request.form['newpass'],
           'rname':request.form['rname'],
+          'type':request.form['type'],
           'org':request.form['org'],
-          'year':request.form['year']
-          }
+          'year':request.form['year']}
+    
     if len(request.form['newuser'])==0 or len(request.form['newpass'])==0 or \
         len(request.form['rname'])==0 or len(request.form['org'])==0:
         sentence='NG : Fill in the blank!: すべての空欄を埋めてください。'
         return make_response(render_template('error.html',sentence=sentence))
+    
+    if request.form['newuser'] in user_prof.keys():
+        sentence='NG: 新しいユーザーを登録できません。ユーザー名[{}]は使われています。違うユーザー名を指定してください。'.format(request.form['newuser'])
+        return make_response(render_template('error.html',sentence=sentence))
+    
     try:
-        hantei=my_func.adduser(admin,
-                               adminpass,
-                               info)
+        hantei=my_func.adduser(admin, adminpass, info)
         if hantei:
             resp='OK'
             resp = make_response(render_template(
@@ -612,33 +627,69 @@ def admin_analysis():
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
     
-    if my_func.admin_kakunin(admin, adminpass):
+    if my_func.admin_kakunin(admin, adminpass) and not(len(admin)==0 or len(adminpass)==0):
         pass
     else:
-        return 'admin_kakunin error'
+        sentence='初めからやり直してください。'
+        return make_response(render_template('error.html',
+                                             sentence=sentence))
     
-    if len(admin)==0 or len(adminpass)==0:
-        return 'cannot access analysis'
-    return 'Analysis機能は工事中です。もうしばらくお待ちください。'
+    day_list=[]
+    data_list=[]
+    for i in range(31):
+        day=datetime.date.today() - datetime.timedelta(days=i)
+        strday=day.strftime("%Y-%m-%d")
+        data=my_func.sql_data_per_day(strday)
+        dassui_data=[(d['wa']-d['wb'])/d['wb'] for d in data]
+        day_list.append(day.strftime("%m/%d"))
+        if len(dassui_data)>0:
+            data_list.append(sum(dassui_data) / len(dassui_data))
+        else:
+            data_list.append(-100)
+    
+    data_list.reverse()
+    day_list.reverse()
+    
+    plt.plot(data_list,'o')
+    plt.xticks(range(0,31)[::3],day_list[::3])
+    
+    plt.grid(color='gray')
+    plt.ylim(-2,2)
+    plt.ylabel('Dehydration rate')
+    plt.xlabel('Date')
+    plt.title('Daily average')
+    plt.savefig('./static/img/ave.png')
+    
+    return make_response(render_template('admin_analysis.html'))
 
-@app.route("/admin/help", methods=["GET"])
-def admin_help():
+@app.route("/admin/download", methods=["GET","POST"])
+def admin_download():
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
     
-    if my_func.admin_kakunin(admin, adminpass):
+    if my_func.admin_kakunin(admin, adminpass) and not(len(admin)==0 or len(adminpass)==0):
         pass
     else:
-        return 'admin_kakunin error'
+        sentence='初めからやり直してください。'
+        return make_response(render_template('error.html',
+                                             sentence=sentence))
+    resp = make_response()
     
-    if len(admin)==0 or len(adminpass)==0:
-        return 'cannot access help'
-    return 'Help機能は工事中です。もうしばらくお待ちください。困りごとは，間宮または宮川まで。'
+    file=request.args.get('file')
+    if file=='data':
+        resp.data = open("./database/data.csv", "rb").read()
+        downloadFileName = 'data.csv'    
+        
+    elif file=='user':
+        resp.data = open("./database/user_list.csv", "rb").read()
+        downloadFileName = 'user.csv'
+    
+    resp.headers['Content-Disposition'] = 'attachment; filename=' + downloadFileName
+    resp.mimetype = 'text/csv'
+    return resp
 
 if __name__ == "__main__":
     app.run(debug=False,
             host=server_host,
             port=server_port,
-            threaded=True
-            )
-
+            threaded=True)
