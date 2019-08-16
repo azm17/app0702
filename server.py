@@ -60,18 +60,18 @@ def hello():
     
     print("ID:{} TRY LOGIN ".format(userid)+str(hantei))
     if hantei:# lonin success
-        templist=[round(i/5-10,1) for i in range(276)]
+       #templist=[round(i/5-10,1) for i in range(276)]
         #11~3月のみ雪マークを追加
         weather=[{'num':'{}'.format(i),'moji':tenki_dic[i]}
                     for i in tenki_dic.keys()
                         if not(4<=datetime.datetime.today().month<=10) and i=='4' 
                             or i=='1' or i=='2' or i=='3']
-        
+        water=['{:.2f}'.format(round(i*0.05,2)) for i in range(201)]
         return render_template('hello.html', 
                                title='flask test', 
                                name=user_prof[userid]['rname'],
-                               templist=templist,
                                weather=weather,
+                               water=water,
                                serverhost=server_address)
     else:# login fail
         sentence='接続できません。最初からやり直してください。'
@@ -123,7 +123,10 @@ def show():
                 })
         if len(posts)>0:
             latest=posts.pop(0)
-            comment=my_func.generateComment(latest)
+            data=my_func.generateComment(latest)
+            comment=data['sentence']
+            img=data['img']
+            
         else:
             latest={
                   'date' : '今回',#日
@@ -169,6 +172,7 @@ def show():
                                              latest=latest,
                                              comment=comment,
                                              texts=texts,
+                                             img=img,
                                              rname=user_prof[userid]['rname'],
                                              serverhost=server_address))
         resp.set_cookie('user', userid)

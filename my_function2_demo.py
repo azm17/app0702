@@ -299,17 +299,21 @@ def hakkann_ryo_ex1(wb,water):#運動時間あたり-1%発汗量(飲水必要量
 #--Written By Mutsuyo-----------------------------------
 
 def generateComment(data):
-    sentence='今日もトレーニングお疲れ様です。'
+    sentence='おつかれさま。'
     if 0<=data['dehydraterate']:
-        sentence+='よく水分補給できています。この調子で水分補給しましょう！'
+        sentence+='トレーニング中水分補給がんばった!!'
+        img='suzuki1.jpg'
     elif -1.0<data['dehydraterate']<0:
-        sentence+='きちんと水分補給しましょう！'
+        sentence+='トレーニング中の水分補給大事。この調子!!'
+        img='suzuki2.jpg'
     elif -2.0<=data['dehydraterate']<=-1.0:
     #elif -1.0 < data['dehydraterate']:
-        sentence+='水分補給もう少し！'
+        sentence+='水分補給もう少し。目指せ脱水率-1%以内でパフォーマンスup!'
+        img='suzuki3.jpg'
     elif data['dehydraterate']<-2.0:
-        sentence+='水分補給増やそう！'
+        sentence+='トレーニング中水分不足だよ。水分補給を増やして、熱中症や食欲不振を予防しよう。目指せ脱水率-1%以内。'
+        img='suzuki3.jpg'
     else:
+        img='suzuki1.jpg'
         sentence='ERROR'
-    
-    return sentence
+    return {'sentence':sentence,'img':img}

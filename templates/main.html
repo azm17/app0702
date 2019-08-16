@@ -12,7 +12,7 @@
 		<br>&nbsp;&nbsp;&nbsp;&nbsp;Let's hydrate！</h2>
 	<div><br>
 		<div>
-		<h3>{{rname}}さん、こんにちわ。</h3>
+		<h3>{{rname}}さん、ようこそ　部活Do!食べる部。</h3>
 		<h2>{{latest.date}}の結果</h2>
 		</div>
 		<table id="output" class="setwidth">
@@ -92,7 +92,7 @@
 		<div>
 		<div class="balloon5">
 		  <div class="faceicon">
-		    <img src="./static/img/suzuki1.png" alt="鈴木さん1" title="test">
+		    <img src="./static/img/{{img}}" alt="鈴木さん1" title="test">
 		  </div>
 		  <div class="chatting">
 		    <div class="says">
@@ -101,7 +101,7 @@
 		  </div>
 		</div>
 	<br>
-	<h3>皆さんへの連絡</h3>
+	<h3>アスリートのみなさんへ</h3>
 	{% for text in texts%}
 	<div class="box30 setwidth2">
 		<div class="box-title">[{{text.day}}] {{text.title}}

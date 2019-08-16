@@ -25,8 +25,27 @@
 					<input type="text" name="text" size="20">
 				</td>
 			</tr>
-			<tr><td>運動時間(h)</td><td><input value="1" type="number" name="time"></td></tr>
-			<tr><td>飲水量(L)</td><td><input value="0.5" step="0.1" type="number" name="moi"></td></tr>
+			<tr>
+				<td>トレーニング時間(h)</td>
+				<td>
+				<select name="time">
+					<option value="">-</option>
+					{% for i in range(49) %}
+					<option value="{{i/2}}">{{i/2}}</option>
+					{% endfor %}
+					</select>
+				</td>
+			</tr>
+			<tr><td>飲水量(L)</td>
+				<td>
+					<select name="moi">
+					<option value="">-</option>
+					{% for i in water %}
+					<option value="{{i}}">{{i}}</option>
+					{% endfor %}
+					</select>
+				</td>
+			</tr>
 			<tr>
 				<td>天気</td>
 				<td>
@@ -38,12 +57,12 @@
 				</td>
 			</tr>
 			<tr>
-				<td>温度(℃)</td>
+				<td>気温(℃)</td>
 				<td>
 					<select name="temp">
 						<option value="">-</option>
-						{% for i in templist %}
-						<option value="{{i}}">{{i}}</option>
+						{% for i in range(66) %}
+						<option value="{{i-20}}">{{i-20}}</option>
 						{% endfor %}
 					</select>
 				</td>
