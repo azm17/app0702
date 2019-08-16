@@ -32,7 +32,12 @@ input {
 p {
 	color: white;
 }
-
+h3 {
+	color: white;
+}
+td {
+	color: white;
+}
 }
 .pfooter {
 	color: white;
@@ -51,7 +56,7 @@ p {
 	border-style: none;
 }
 img {
-width: 100%;
+	width: 100%;
 }
 
 @media screen and (min-width:500px) {

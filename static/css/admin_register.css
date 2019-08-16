@@ -43,6 +43,10 @@ input {
 	border-bottom: solid 1px silver;
 }
 
+textarea {
+  font-family : inherit;
+  font-size   : 100%;
+}
 .center {
 	text-align: center;
 }

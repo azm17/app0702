@@ -22,7 +22,7 @@ day_list.reverse()
 
 
 plt.plot(data_list,'o')
-plt.xticks(range(0,31)[::3],day_list[::3])
+#plt.xticks(range(0,31)[::3],day_list[::3])
 
 plt.grid(color='gray')
 plt.ylim(-2,2)

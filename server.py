@@ -11,10 +11,12 @@ pip3 install mysql-connector-python
 pip3 import datetime
 """
 
-from flask import Flask,request,render_template,make_response
+from flask import Flask,request,render_template,make_response,redirect
 import my_function2_demo as my_func
 import datetime
 import matplotlib.pyplot as plt
+import os
+import glob
 
 
 app = Flask(__name__)
@@ -78,8 +80,13 @@ def hello():
 # 一般ユーザーの結果（表）画面
 @app.route("/show", methods=["POST"])
 def show():
-    userid = request.form['user']
-    userpass = request.form['pass']
+    try:
+        userid = request.form['user']
+        userpass = request.form['pass']
+    except:
+        userid = request.cookies.get('user')
+        userpass = request.cookies.get('pass')
+        
     user_prof=my_func.sql_ALLuser_profile()
     
     if my_func.kakunin(userid,userpass):
@@ -101,7 +108,7 @@ def show():
                   'date' : d['day'],#日
                   'bweight' : d['wb'],#運動前体重
                   'aweight' : d['wa'],#運動後体重
-                  'training' : d['contents'],#トレーニング内容
+                  'training' : d['contents'][0:10],#トレーニング内容
                   'period' : d['time'],#運動時間
                   'intake' : d['moi'],#飲水量
                   'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
@@ -166,15 +173,18 @@ def show():
                                              serverhost=server_address))
         resp.set_cookie('user', userid)
         resp.set_cookie('pass', userpass)
+        
         return resp
     except Exception as error:
-        sentence='NG: '+error.__str__()
+        sentence='''エラー: 結果の画面が取得できません。
+        SQLサーバーが停止している、または、
+        表データに不正な文字が含まれているため表示できません。 
+        サーバー側に問題があるので、管理者にお問い合わせください。(detail:'''+error.__str__()+')'
         return make_response(render_template('error.html',sentence=sentence))
 
 # 情報入力
 @app.route("/enter", methods=["GET","POST"])
 def enter():
-    user_prof=my_func.sql_ALLuser_profile()
     userid = request.cookies.get('user')
     userpass = request.cookies.get('pass')
     
@@ -184,6 +194,19 @@ def enter():
         sentence='接続できません。最初の画面からやり直してください。'
         return make_response(render_template('error.html',sentence=sentence))
     
+    ## 不正入力処理
+    if len(request.form['text'])==0:
+        sentence='ERROR： 情報を送信できませんでした。すべての情報を正しく入力しましたか？'+'(detail: トレーニングメニューが入力されていません。)'
+        return make_response(render_template('error.html',sentence=sentence))
+    if float(request.form['wb'])<=0 or float(request.form['wb'])<=0:
+        sentence='''ERROR： 情報を送信できませんでした。
+        (detail: あなたの体重が{}kgと{}kgになっています。
+        そんなわけありません。)'''.format(request.form['wb'],request.form['wa'])
+        return make_response(render_template('error.html',sentence=sentence))
+    if float(request.form['time'])<0 or float(request.form['moi'])<0:
+        sentence='ERROR： 情報を送信できませんでした。'+'(detail: 運動時間または飲水量を正の値にしてください。)'
+        return make_response(render_template('error.html',sentence=sentence))
+    ##
     print("ID:{} GET ".format(userid))
     try:
         weight_after= float(request.form['wa'])
@@ -203,6 +226,7 @@ def enter():
                               shitsudo,
                               temp)
         
+        
         data=my_func.sql_data_get(userid)
         
         posts=[]
@@ -214,7 +238,7 @@ def enter():
                   'date' : d['day'],#日
                   'bweight' : d['wb'],#運動前体重
                   'aweight' : d['wa'],#運動後体重
-                  'training' : d['contents'],#トレーニング内容
+                  'training' : d['contents'][0:10],#トレーニング内容
                   'period' : d['time'],#運動時間
                   'intake' : d['moi'],#飲水量
                   'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
@@ -225,37 +249,17 @@ def enter():
                   'dassui1':round(my_func.hakkann_ritu_ex1(d['wb'],d['wa'],d['time']),1),
                   'necessary':round(my_func.hakkann_ryo(d['wb'],d['wa'],d['moi']),1),
                   'necessary1':neccessary1_tmp,
-                  'w1':round(d['wb']*0.99,1)
-                })
-        
-        latest=posts.pop(0)
-        comment=my_func.generateComment(latest)
-        messages=my_func.sql_message_get(
-                userid,
-                userpass,
-                max_messages=3)
-        
-        texts=[]
-        for d in messages:
-            texts.append({
-                'day': d['day'],
-                'rname': user_prof[d['userid']]['rname'],
-                'group': d['group'],
-                'title': d['title'],
-                'contents': d['contents']})
-        
-        return render_template('main.html', 
-                               title='My Title',
-                               user=userid,
-                               posts=posts,
-                               latest=latest,
-                               comment=comment,
-                               texts=texts,
-                               rname=user_prof[userid]['rname'],
-                               serverhost=server_address)
+                  'w1':round(d['wb']*0.99,1)})
+                
+        redirect_to_index = redirect('/show',code=307)
+        resp=make_response(redirect_to_index)
+        resp.set_cookie('user', userid)
+        resp.set_cookie('pass', userpass)
+        #showへリダイレクト
+        return resp
+    
     except Exception as error:
         sentence='ERROR： 情報を送信できませんでした。すべての情報を正しく入力しましたか？'+'(detail: '+error.__str__()+')'
-
         return make_response(render_template('error.html',sentence=sentence))
 
 # for administration
@@ -386,7 +390,7 @@ def admin_watch_show():
                   'date' : d['day'],#日
                   'bweight' : d['wb'],#運動前体重
                   'aweight' : d['wa'],#運動後体重
-                  'training' : d['contents'],#トレーニング内容
+                  'training' : d['contents'][0:10],#トレーニング内容
                   'period' : d['time'],#運動時間
                   'intake' : d['moi'],#飲水量
                   'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
@@ -442,14 +446,14 @@ def admin_latest():
             posts=[]
             for d in reversed(data):
                 posts.append({
-                  'date' : d['day'],#日
-                  'bweight' : d['wb'],#運動前体重
-                  'aweight' : d['wa'],#運動後体重
-                  'training' : d['contents'],#トレーニング内容
-                  'period' : d['time'],#運動時間
-                  'intake' : d['moi'],#飲水量
-                  'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
-                  'dehydrateval' : str(round(float(d['wb'])-float(d['wa']),1)),#脱水量
+                  'date':d['day'],#日
+                  'bweight':d['wb'],#運動前体重
+                  'aweight':d['wa'],#運動後体重
+                  'training':d['contents'][0:10],#トレーニング内容
+                  'period':d['time'],#運動時間
+                  'intake':d['moi'],#飲水量
+                  'dehydraterate':my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
+                  'dehydrateval':str(round(float(d['wb'])-float(d['wa']),1)),#脱水量
                   'tenki':tenki_dic[str(d['tenki'])],#天気
                   'shitsudo':d['shitsudo'],#湿度
                   'temp':d['temp'],
@@ -640,27 +644,47 @@ def admin_analysis():
         day=datetime.date.today() - datetime.timedelta(days=i)
         strday=day.strftime("%Y-%m-%d")
         data=my_func.sql_data_per_day(strday)
-        dassui_data=[(d['wa']-d['wb'])/d['wb'] for d in data]
+        dassui_data=[100*float((d['wa']-d['wb'])/d['wb']) for d in data]
         day_list.append(day.strftime("%m/%d"))
+        if i==0:
+            today_list=dassui_data
         if len(dassui_data)>0:
-            data_list.append(sum(dassui_data) / len(dassui_data))
+            data_list.append(float(sum(dassui_data) / len(dassui_data)))
         else:
-            data_list.append(-100)
-    
+            data_list.append(float(-100))
+    # 脱水率平均の図を出力
     data_list.reverse()
     day_list.reverse()
     
+    plt.figure()
     plt.plot(data_list,'o')
     plt.xticks(range(0,31)[::3],day_list[::3])
-    
     plt.grid(color='gray')
-    plt.ylim(-2,2)
+    plt.ylim(-2.5,1.5)
     plt.ylabel('Dehydration rate')
     plt.xlabel('Date')
     plt.title('Daily average')
-    plt.savefig('./static/img/ave.png')
+    filename=datetime.datetime.now().strftime("%Y%m%d%H%M%S")+'ave.png'
+    path_list = glob.glob('./static/img/analysis/*.png')
+    for file in path_list:
+        os.remove(file)
+    plt.savefig('./static/img/analysis/'+filename)
+    # 散布図
+    plt.figure()
+    plt.hist(today_list,bins=10,range=(-2,2))
+    print(today_list)
+    plt.ylabel('Frequency')
+    plt.xlabel('Dehydration rate')
+    plt.ylim(0,)
+    plt.xlim(-2,2)
+    plt.title('Today\'s Scatter plot')
+    filename2=datetime.datetime.now().strftime("%Y%m%d%H%M%S")+'scatter.png'
+    plt.savefig('./static/img/analysis/'+filename2)
     
-    return make_response(render_template('admin_analysis.html'))
+    
+    return make_response(render_template('admin_analysis.html',
+                                         fname=filename,
+                                         fname2=filename2))
 
 @app.route("/admin/download", methods=["GET","POST"])
 def admin_download():
@@ -683,6 +707,7 @@ def admin_download():
     elif file=='user':
         resp.data = open("./database/user_list.csv", "rb").read()
         downloadFileName = 'user.csv'
+    
     
     resp.headers['Content-Disposition'] = 'attachment; filename=' + downloadFileName
     resp.mimetype = 'text/csv'

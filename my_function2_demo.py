@@ -56,8 +56,9 @@ def sql_ALLuser_profile():
 def kakunin(user_name, user_pass):
     connected=False
     user_dic=get_user_dic()
-    if user_pass==user_dic[user_name]:
-        connected=True
+    if user_name in user_dic.keys():
+        if user_pass==user_dic[user_name]:
+            connected=True
     return connected
 
 def admin_kakunin(user_name, user_pass):
