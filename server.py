@@ -12,7 +12,7 @@ pip3 import datetime
 """
 
 from flask import Flask,request,render_template,make_response,redirect
-import my_function2_demo as my_func
+import my_function2_sql as my_func
 import datetime
 import matplotlib.pyplot as plt
 import os
@@ -21,8 +21,8 @@ import glob
 
 app = Flask(__name__)
 #server host
-server_host='192.168.0.15'
-#server_host='192.168.2.102'
+#server_host='192.168.0.15'
+server_host='192.168.2.102'
 #server_host='192.168.56.1'
 #server_host='192.168.0.6'
 #server_host='test-server0701.herokuapp.com'
@@ -149,6 +149,8 @@ def show():
                 最初のデータを入力しましょう。
                 下の「データ入力」ボタンから結果を登録できます。
                 また、「皆さんへの連絡」は、このアプリを利用している全員向けのコメントです。'''
+            
+            img='suzuki1.png'
         messages=my_func.sql_message_get(
                 userid,
                 userpass,
@@ -206,6 +208,14 @@ def enter():
         sentence='''ERROR： 情報を送信できませんでした。
         (detail: あなたの体重が{}kgと{}kgになっています。
         そんなわけありません。)'''.format(request.form['wb'],request.form['wa'])
+        return make_response(render_template('error.html',sentence=sentence))
+    print(request.form['time'])
+    if request.form['time']=='' \
+        or request.form['temp']=='' \
+            or request.form['sitsu']==''\
+                or request.form['moi']=='':
+        sentence='ERROR： 情報を送信できませんでした。すべての情報を正しく入力しましたか？'\
+                +'(detail: トレーニング時間、飲水量、気温、湿度のいずれかが未入力です。)'
         return make_response(render_template('error.html',sentence=sentence))
     if float(request.form['time'])<0 or float(request.form['moi'])<0:
         sentence='ERROR： 情報を送信できませんでした。'+'(detail: 運動時間または飲水量を正の値にしてください。)'
@@ -426,7 +436,7 @@ def admin_watch_show():
         sentence='NG: cannot access watch/show'
         return make_response(render_template('error.html',sentence=sentence))
 
-# 管理者用アプリNew!
+# 管理者用アプリNew!(過去2日の投稿を表示)
 @app.route("/admin/latest", methods=["POST"])
 def admin_latest():
     admin = request.cookies.get('user')
@@ -591,7 +601,7 @@ def admin_message():
             return 'cannot access message'
         
         # you have to add form of group below
-        group = None
+        group = 'ALL'
         title = str(request.form['title'])
         contents = str(request.form['contents'])
         
@@ -676,7 +686,6 @@ def admin_analysis():
     # 散布図
     plt.figure()
     plt.hist(today_list,bins=10,range=(-2,2))
-    print(today_list)
     plt.ylabel('Frequency')
     plt.xlabel('Dehydration rate')
     plt.ylim(0,)
@@ -685,11 +694,10 @@ def admin_analysis():
     filename2=datetime.datetime.now().strftime("%Y%m%d%H%M%S")+'scatter.png'
     plt.savefig('./static/img/analysis/'+filename2)
     
-    
     return make_response(render_template('admin_analysis.html',
                                          fname=filename,
                                          fname2=filename2))
-
+# データのダウンロード
 @app.route("/admin/download", methods=["GET","POST"])
 def admin_download():
     admin = request.cookies.get('user')
@@ -711,8 +719,6 @@ def admin_download():
     elif file=='user':
         resp.data = open("./database/user_list.csv", "rb").read()
         downloadFileName = 'user.csv'
-    
-    
     resp.headers['Content-Disposition'] = 'attachment; filename=' + downloadFileName
     resp.mimetype = 'text/csv'
     return resp

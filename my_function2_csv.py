@@ -2,7 +2,8 @@
 """
 Created on Fri May 17 12:52:30 2019
 
-@author: azumi
+@author: Azumi Mamiya
+         Daiki Miyagawa
 """
 
 #import mysql.connector
@@ -23,7 +24,6 @@ def get_user_dic():
                      encoding="shift-jis")#ユーザーリストからidとpassを取得
     for i in range(len(df)):
         user_dic[df.at[i,'id']]=df.at[i,'password']
-    
     return user_dic
 
 def get_user_info():
@@ -37,7 +37,7 @@ def get_user_info():
                           'type':str(df.at[i,'type']),
                           'rname':df.at[i,'rname'],
                           'org':df.at[i,'org'],
-                          'year':df.at[i,'org']})    
+                          'year':df.at[i,'org']})
     return user_info
 
 def sql_ALLuser_profile():
@@ -65,7 +65,9 @@ def admin_kakunin(user_name, user_pass):
     connected=False
     user_info=get_user_info()
     for i in range(len(user_info)):
-        if user_name==user_info[i]['id'] and user_pass==user_info[i]['password'] and user_info[i]['type']=='0':
+        if user_name==user_info[i]['id'] \
+            and user_pass==user_info[i]['password'] \
+                and user_info[i]['type']=='0':
             connected=True
             break
     return connected
@@ -106,8 +108,9 @@ def sql_data_send(user_name,
                    "bweight",
                    "aweight",
                    "water",
-                   "temp"]
-        
+                   "temp",
+                   "rtime"]
+        Rtime=datetime.datetime.now().strftime("%Y%m%d%H%M%S")
         tmp_se = pd.Series([user_name,
                             day,
                             weather,
@@ -117,11 +120,12 @@ def sql_data_send(user_name,
                             bweight,
                             aweight,
                             water,
-                            temp], index=columns, name=str(df.shape[0]))
+                            temp,
+                            Rtime], index=columns, name=str(df.shape[0]))
         df = df.append(tmp_se)
         df.to_csv('./database/data.csv',encoding="shift-jis")
     return  'OK'
-
+ 
 def sql_data_get(user_nm):
     #user_name ←のアカウントを使って
     #user_nm ←のデータを取得
@@ -142,6 +146,7 @@ def sql_data_get(user_nm):
                           'tenki':df['weather'][i],#天気
                           'shitsudo':df['humidity'][i],
                           'temp':df['temp'][i]})#湿度
+    data_list.sort(key=lambda x:x['day'])
     
     return data_list
 
@@ -311,7 +316,8 @@ def generateComment(data):
         sentence+='水分補給もう少し。目指せ脱水率-1%以内でパフォーマンスup!'
         img='suzuki3.jpg'
     elif data['dehydraterate']<-2.0:
-        sentence+='トレーニング中水分不足だよ。水分補給を増やして、熱中症や食欲不振を予防しよう。目指せ脱水率-1%以内。'
+        sentence+='''トレーニング中水分不足だよ。水分補給を増やして、
+                    熱中症や食欲不振を予防しよう。目指せ脱水率-1%以内。'''
         img='suzuki3.jpg'
     else:
         img='suzuki1.jpg'
