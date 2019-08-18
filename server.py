@@ -56,7 +56,7 @@ def hello():
     userid = request.cookies.get('user')
     userpass = request.cookies.get('pass')
     hantei=my_func.kakunin(userid,userpass)
-    user_prof=my_func.sql_ALLuser_profile()
+    user_prof=my_func.sql_ALLuser_profile(id, userpass)
     
     print("ID:{} TRY LOGIN ".format(userid)+str(hantei))
     if hantei:# lonin success
@@ -87,7 +87,7 @@ def show():
         userid = request.cookies.get('user')
         userpass = request.cookies.get('pass')
         
-    user_prof=my_func.sql_ALLuser_profile()
+    user_prof=my_func.sql_ALLuser_profile(userid, userpass)
     
     if my_func.kakunin(userid,userpass):
         pass
@@ -341,7 +341,7 @@ def admin_show():
 def admin_watch():# ユーザリスト　ユーザを選び->admin_watch_show()
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
-    user_prof=my_func.sql_ALLuser_profile()
+    user_prof=my_func.sql_ALLuser_profile(admin,adminpass)
     
     if my_func.admin_kakunin(admin, adminpass):
         pass
@@ -382,7 +382,7 @@ def admin_watch():# ユーザリスト　ユーザを選び->admin_watch_show()
 def admin_watch_show():
     admin = request.cookies.get('user')# クッキーを保存
     adminpass = request.cookies.get('pass')# クッキーを保存
-    user_prof = my_func.sql_ALLuser_profile()
+    user_prof = my_func.sql_ALLuser_profile(admin, adminpass)
     
     if my_func.admin_kakunin(admin, adminpass):
         pass
@@ -441,7 +441,7 @@ def admin_watch_show():
 def admin_latest():
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
-    user_prof=my_func.sql_ALLuser_profile()
+    user_prof=my_func.sql_ALLuser_profile(admin, adminpass)
     
     if admin=='' or adminpass=='':
         sentence='cannot access!'
@@ -493,7 +493,7 @@ def admin_latest():
 def admin_register():
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
-    user_prof=my_func.sql_ALLuser_profile()
+    user_prof=my_func.sql_ALLuser_profile(admin, adminpass)
     
     if my_func.admin_kakunin(admin, adminpass):
         pass
@@ -547,7 +547,7 @@ def admin_register():
                     year=datetime.datetime.now().year)
             )
             #user_proの更新
-            #user_prof=my_func.sql_ALLuser_profile()
+            #user_prof=my_func.sql_ALLuser_profile(user_name, user_pass)
             return resp
         else:
             return 'NG'
@@ -559,7 +559,7 @@ def admin_register():
 def admin_message():
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
-    user_prof=my_func.sql_ALLuser_profile()
+    user_prof=my_func.sql_ALLuser_profile(admin, adminpass)
     
     if my_func.admin_kakunin(admin, adminpass):
         pass
@@ -712,12 +712,22 @@ def admin_download():
     resp = make_response()
     
     file=request.args.get('file')
+    ## SQL####
+    hantei=my_func.sql_makecsv(file)
+    if hantei:
+        pass
+    else:
+        sentence='ERROR: CSVファイルを作成できません。'
+        return make_response(render_template('error.html',
+                                             sentence=sentence))
+    ## SQL####
+    
     if file=='data':
-        resp.data = open("./database/data.csv", "rb").read()
+        resp.data = open("./data.csv", "rb").read()
         downloadFileName = 'data.csv'    
         
     elif file=='user':
-        resp.data = open("./database/user_list.csv", "rb").read()
+        resp.data = open("./user_list.csv", "rb").read()
         downloadFileName = 'user.csv'
     resp.headers['Content-Disposition'] = 'attachment; filename=' + downloadFileName
     resp.mimetype = 'text/csv'

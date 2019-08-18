@@ -8,7 +8,7 @@ Created on Fri May 17 12:52:30 2019
 
 import mysql.connector
 import datetime
-#import pandas as pd
+import csv
 
 SQLserver_host='192.168.2.107'
 SQLserver_port=3306
@@ -16,6 +16,7 @@ database_name='dehydration2'
 sql_userid='sql_azumi'
 sql_userpass='sql_mamiya'
 
+#my_function内のみ使用
 #すべてのユーザーのIDとパスを表示
 def get_user_dic():
     user_dic={}
@@ -35,11 +36,9 @@ def get_user_dic():
         user_dic[row[0]]=row[1]
     return user_dic
 
+#my_function内のみ使用
 def get_user_info():
     user_info=[]
-    #df = pd.read_csv('./database/user_list.csv',
-    #                 index_col=0,
-    #                 encoding="shift-jis")#ユーザーリストからidとpassを取得
     conn = mysql.connector.connect(
         host = SQLserver_host,
         port = SQLserver_port,
@@ -64,12 +63,9 @@ def get_user_info():
     conn.close()
     return user_info
 
-def sql_ALLuser_profile():
-    user_prof={}
-    #df = pd.read_csv('./database/user_list.csv',
-    #                 index_col=0,
-    #                 encoding="shift-jis")#すべてのユーザのpass以外情報を取得
-    
+def sql_ALLuser_profile(user_name, user_pass):
+    kakunin(user_name, user_pass)
+    user_prof={}    
     conn = mysql.connector.connect(
         host = SQLserver_host,
         port = SQLserver_port,
@@ -128,6 +124,7 @@ def sql_data_send(user_name,
                   weather,
                   humidity,
                   temp):
+    
     user_dic=get_user_dic()
     if user_pass==user_dic[user_name]:
         user_dic=get_user_dic()
@@ -270,9 +267,6 @@ def sql_message_get(userid, userpass, max_messages = 10):
     user_dic=get_user_dic()
     data_list = []
     if userpass==user_dic[userid]:
-        #df = pd.read_csv('./database/board.csv',
-        #                 encoding="shift-jis")
-        #for i in range(len(df)):
         conn = mysql.connector.connect(
             host = SQLserver_host,
             port = SQLserver_port,
@@ -304,8 +298,6 @@ def sql_message_get(userid, userpass, max_messages = 10):
 def adduser(admin,adminpass,info):
     user_dic=get_user_dic()
     if adminpass==user_dic[admin]:
-        #user_dic=get_user_dic()
-        
         conn = mysql.connector.connect(
             host = SQLserver_host,
             port = SQLserver_port,
@@ -331,12 +323,6 @@ def adduser(admin,adminpass,info):
 def sql_data_per_day(day):
     #user_name ←のアカウントを使って
     #user_nm ←のデータを取得
-    #data_list=[]
-    #tmp_df = pd.read_csv('./database/data.csv',
-    #                 index_col=0,
-    #                 encoding="shift-jis")
-    
-    #df=tmp_df[tmp_df['day'] ==day].reset_index()
     conn = mysql.connector.connect(
         host = SQLserver_host,
         port = SQLserver_port,
@@ -367,6 +353,66 @@ def sql_data_per_day(day):
     
     return data_list
 
+def sql_makecsv(file):
+    data_list=[]
+    conn = mysql.connector.connect(
+        host = SQLserver_host,
+        port = SQLserver_port,
+        user = sql_userid,
+        password = sql_userpass,
+        database = database_name,
+    )
+    cur = conn.cursor()
+    connected = conn.is_connected()
+    
+    if (not connected):
+        conn.ping(True)
+    if file=="data":
+        cur.execute('''SELECT `id`,`day`, `weather`, `humidity`, `training`,`time`,
+                        `bweight`,`aweight`,`water`,`temp`,`rtime` FROM `{}`'''.format("data"))
+        for row in cur.fetchall():
+            data_list.append({'id':row[0],
+                              'day':row[1],#日
+                              'weather':row[2],#天気
+                              'humidity':row[3],
+                              'training':row[4],#トレーニング内容
+                              'time':row[5],#時間
+                              'bweight':row[6],#運動前体重
+                              'aweight':row[7],#運動後体重
+                              'water':row[8],#飲水量
+                              'temp':row[9],
+                              'rtime':row[10]})#湿度
+        cur.close()
+        conn.close()
+        
+        with open('data.csv', 'w', newline="") as csv_file:
+            fieldnames = ['id', 'day','weather','humidity','training','time','bweight','aweight','water','temp','rtime']
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            writer.writeheader()
+            for d in data_list:
+                writer.writerow(d)
+        
+    elif file=="user":
+        cur.execute('''SELECT `{}`,`{}`,`{}`,`{}`,`{}` FROM `{}` '''
+                .format("id","type","rname","org","year","user_list"))
+        for row in cur.fetchall():
+            data_list.append({
+                     'id':row[0],
+                     'rname':row[2],
+                     'type':row[1],
+                     'org':row[3],
+                     'year':row[4]})
+
+        cur.close()
+        with open('user_list.csv', 'w', newline="") as csv_file:
+            fieldnames = ['id','password', 'type','rname','org', 'year']
+            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            writer.writeheader()
+            for d in data_list:
+                writer.writerow(d)
+        
+        
+    return True
 #--Written By Mutsuyo-----------------------------------
 def dassui_ritu(wb,wa):#脱水率
     z=round((wa-wb)/wb*100,1)#wb運動前　wa運動後
