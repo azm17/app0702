@@ -40,7 +40,7 @@ def get_user_info():
                           'year':df.at[i,'org']})
     return user_info
 
-def sql_ALLuser_profile():
+def sql_ALLuser_profile(user_name, user_pass):
     user_prof={}
     df = pd.read_csv('./database/user_list.csv',
                      index_col=0,
@@ -279,7 +279,8 @@ def sql_data_per_day(day):
     
     return data_list
 
-
+def sql_makecsv(file):
+    return True
 #--Written By Mutsuyo-----------------------------------
 def dassui_ritu(wb,wa):#脱水率
     z=round((wa-wb)/wb*100,1)#wb運動前　wa運動後

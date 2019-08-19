@@ -12,7 +12,7 @@ pip3 import datetime
 """
 
 from flask import Flask,request,render_template,make_response,redirect
-import my_function2_sql as my_func
+import my_function2_csv as my_func
 import datetime
 import matplotlib.pyplot as plt
 import os
@@ -21,8 +21,8 @@ import glob
 
 app = Flask(__name__)
 #server host
-server_host='192.168.0.12'
-#server_host='192.168.2.102'
+#server_host='192.168.0.12'
+server_host='192.168.2.102'
 #server_host='192.168.56.1'
 #server_host='192.168.0.6'
 #server_host='test-server0701.herokuapp.com'
