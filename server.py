@@ -12,7 +12,7 @@ pip3 import datetime
 """
 
 from flask import Flask,request,render_template,make_response,redirect
-import my_function2_demo as my_func
+import my_function2_csv as my_func
 import datetime
 import matplotlib.pyplot as plt
 import os
@@ -21,8 +21,8 @@ import glob
 
 app = Flask(__name__)
 #server host
-server_host='192.168.0.15'
-#server_host='192.168.2.102'
+#server_host='192.168.0.12'
+server_host='192.168.2.102'
 #server_host='192.168.56.1'
 #server_host='192.168.0.6'
 #server_host='test-server0701.herokuapp.com'
@@ -34,11 +34,11 @@ server_address=server_host+':'+str(server_port)
 #server_address=server_host
 
 #SQL server
-SQLserver_host='192.168.0.32'
-SQLserver_port=3306
-database_name='hydration_db'
-sql_userid='sql_azumi'
-sql_userpass='sql_mamiya'
+#SQLserver_host='192.168.0.32'
+#SQLserver_port=3306
+#database_name='hydration_db'
+#sql_userid='sql_azumi'
+#sql_userpass='sql_mamiya'
 
 tenki_dic={'1':'🌞️','2':'☁️','3':'🌧️','4':'❄️'}
 # 一般ユーザーログイン画面送信
@@ -56,7 +56,7 @@ def hello():
     userid = request.cookies.get('user')
     userpass = request.cookies.get('pass')
     hantei=my_func.kakunin(userid,userpass)
-    user_prof=my_func.sql_ALLuser_profile()
+    user_prof=my_func.sql_ALLuser_profile(id, userpass)
     
     print("ID:{} TRY LOGIN ".format(userid)+str(hantei))
     if hantei:# lonin success
@@ -87,7 +87,7 @@ def show():
         userid = request.cookies.get('user')
         userpass = request.cookies.get('pass')
         
-    user_prof=my_func.sql_ALLuser_profile()
+    user_prof=my_func.sql_ALLuser_profile(userid, userpass)
     
     if my_func.kakunin(userid,userpass):
         pass
@@ -101,7 +101,7 @@ def show():
         data=my_func.sql_data_get(userid)
         posts=[]
         for d in reversed(data):
-            neccessary1_tmp=round(float(d['wb']*0.99)-float(d['wa'])+float(d['moi']),1)
+            neccessary1_tmp=round(float(d['wb']*0.01)+float(d['moi']),1)
             if neccessary1_tmp<=0:
                 neccessary1_tmp=0
             posts.append({
@@ -148,7 +148,9 @@ def show():
                 日々のトレーニング後の脱水量を記録していきます。
                 最初のデータを入力しましょう。
                 下の「データ入力」ボタンから結果を登録できます。
-                また、「皆さんへの連絡」は、このアプリを利用している全員向けのコメントです。'''
+                また、「アスリートのみなさんへ」は、このアプリを利用している全員向けのコメントです。'''
+            
+            img='suzuki1.png'
         messages=my_func.sql_message_get(
                 userid,
                 userpass,
@@ -206,6 +208,14 @@ def enter():
         sentence='''ERROR： 情報を送信できませんでした。
         (detail: あなたの体重が{}kgと{}kgになっています。
         そんなわけありません。)'''.format(request.form['wb'],request.form['wa'])
+        return make_response(render_template('error.html',sentence=sentence))
+    print(request.form['time'])
+    if request.form['time']=='' \
+        or request.form['temp']=='' \
+            or request.form['sitsu']==''\
+                or request.form['moi']=='':
+        sentence='ERROR： 情報を送信できませんでした。すべての情報を正しく入力しましたか？'\
+                +'(detail: トレーニング時間、飲水量、気温、湿度のいずれかが未入力です。)'
         return make_response(render_template('error.html',sentence=sentence))
     if float(request.form['time'])<0 or float(request.form['moi'])<0:
         sentence='ERROR： 情報を送信できませんでした。'+'(detail: 運動時間または飲水量を正の値にしてください。)'
@@ -331,7 +341,7 @@ def admin_show():
 def admin_watch():# ユーザリスト　ユーザを選び->admin_watch_show()
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
-    user_prof=my_func.sql_ALLuser_profile()
+    user_prof=my_func.sql_ALLuser_profile(admin,adminpass)
     
     if my_func.admin_kakunin(admin, adminpass):
         pass
@@ -372,7 +382,7 @@ def admin_watch():# ユーザリスト　ユーザを選び->admin_watch_show()
 def admin_watch_show():
     admin = request.cookies.get('user')# クッキーを保存
     adminpass = request.cookies.get('pass')# クッキーを保存
-    user_prof = my_func.sql_ALLuser_profile()
+    user_prof = my_func.sql_ALLuser_profile(admin, adminpass)
     
     if my_func.admin_kakunin(admin, adminpass):
         pass
@@ -390,6 +400,9 @@ def admin_watch_show():
             data=my_func.sql_data_get(uid_get)
             posts=[]
             for d in reversed(data):#dataは辞書形式
+                neccessary1_tmp=round(float(d['wb']*0.01)+float(d['moi']),1)
+                if neccessary1_tmp<=0:
+                    neccessary1_tmp=0
                 posts.append({
                   'date' : d['day'],#日
                   'bweight' : d['wb'],#運動前体重
@@ -399,9 +412,11 @@ def admin_watch_show():
                   'intake' : d['moi'],#飲水量
                   'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
                   'dehydrateval' : str(round(float(d['wb'])-float(d['wa']),1)),#脱水量
-                  'tenki':d['tenki'],#天気
+                  'tenki':tenki_dic[str(d['tenki'])],#天気
                   'shitsudo':d['shitsudo'],#湿度
-                  'temp':d['temp']
+                  'temp':d['temp'],
+                  'w1':round(d['wb']*0.99,1),
+                  'necessary1':neccessary1_tmp
                 })
             print('Success')
             
@@ -426,12 +441,12 @@ def admin_watch_show():
         sentence='NG: cannot access watch/show'
         return make_response(render_template('error.html',sentence=sentence))
 
-# 管理者用アプリNew!
+# 管理者用アプリNew!(過去2日の投稿を表示)
 @app.route("/admin/latest", methods=["POST"])
 def admin_latest():
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
-    user_prof=my_func.sql_ALLuser_profile()
+    user_prof=my_func.sql_ALLuser_profile(admin, adminpass)
     
     if admin=='' or adminpass=='':
         sentence='cannot access!'
@@ -449,6 +464,9 @@ def admin_latest():
             data=my_func.sql_data_get_latest_all()
             posts=[]
             for d in reversed(data):
+                neccessary1_tmp=round(float(d['wb']*0.01)+float(d['moi']),1)
+                if neccessary1_tmp<=0:
+                    neccessary1_tmp=0
                 posts.append({
                   'date':d['day'],#日
                   'bweight':d['wb'],#運動前体重
@@ -461,7 +479,9 @@ def admin_latest():
                   'tenki':tenki_dic[str(d['tenki'])],#天気
                   'shitsudo':d['shitsudo'],#湿度
                   'temp':d['temp'],
-                  'username':user_prof[d['username']]['rname']}# ユーザの本名
+                  'username':user_prof[d['username']]['rname'],
+                  'w1':round(d['wb']*0.99,1),
+                  'necessary1':neccessary1_tmp}# ユーザの本名
                 )
             print('Success')
             posts = reversed(sorted(posts, key=lambda x:x['date']))
@@ -483,7 +503,7 @@ def admin_latest():
 def admin_register():
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
-    user_prof=my_func.sql_ALLuser_profile()
+    user_prof=my_func.sql_ALLuser_profile(admin, adminpass)
     
     if my_func.admin_kakunin(admin, adminpass):
         pass
@@ -537,7 +557,7 @@ def admin_register():
                     year=datetime.datetime.now().year)
             )
             #user_proの更新
-            #user_prof=my_func.sql_ALLuser_profile()
+            #user_prof=my_func.sql_ALLuser_profile(user_name, user_pass)
             return resp
         else:
             return 'NG'
@@ -549,7 +569,7 @@ def admin_register():
 def admin_message():
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
-    user_prof=my_func.sql_ALLuser_profile()
+    user_prof=my_func.sql_ALLuser_profile(admin, adminpass)
     
     if my_func.admin_kakunin(admin, adminpass):
         pass
@@ -591,7 +611,7 @@ def admin_message():
             return 'cannot access message'
         
         # you have to add form of group below
-        group = None
+        group = 'ALL'
         title = str(request.form['title'])
         contents = str(request.form['contents'])
         
@@ -676,7 +696,6 @@ def admin_analysis():
     # 散布図
     plt.figure()
     plt.hist(today_list,bins=10,range=(-2,2))
-    print(today_list)
     plt.ylabel('Frequency')
     plt.xlabel('Dehydration rate')
     plt.ylim(0,)
@@ -685,11 +704,10 @@ def admin_analysis():
     filename2=datetime.datetime.now().strftime("%Y%m%d%H%M%S")+'scatter.png'
     plt.savefig('./static/img/analysis/'+filename2)
     
-    
     return make_response(render_template('admin_analysis.html',
                                          fname=filename,
                                          fname2=filename2))
-
+# データのダウンロード
 @app.route("/admin/download", methods=["GET","POST"])
 def admin_download():
     admin = request.cookies.get('user')
@@ -704,15 +722,23 @@ def admin_download():
     resp = make_response()
     
     file=request.args.get('file')
+    ## SQL####
+    hantei=my_func.sql_makecsv(file)
+    if hantei:
+        pass
+    else:
+        sentence='ERROR: CSVファイルを作成できません。'
+        return make_response(render_template('error.html',
+                                             sentence=sentence))
+    ## SQL####
+    
     if file=='data':
-        resp.data = open("./database/data.csv", "rb").read()
+        resp.data = open("./data.csv", "rb").read()
         downloadFileName = 'data.csv'    
         
     elif file=='user':
-        resp.data = open("./database/user_list.csv", "rb").read()
+        resp.data = open("./user_list.csv", "rb").read()
         downloadFileName = 'user.csv'
-    
-    
     resp.headers['Content-Disposition'] = 'attachment; filename=' + downloadFileName
     resp.mimetype = 'text/csv'
     return resp
