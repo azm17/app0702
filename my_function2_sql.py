@@ -10,11 +10,14 @@ import mysql.connector
 import datetime
 import csv
 
-SQLserver_host='192.168.0.32'
-SQLserver_port=3306
-database_name='dehydration2'
-sql_userid='mutsu624'
-sql_userpass='624mutsu'
+#SQLserver_host = '192.168.0.32'
+SQLserver_host = '192.168.0.14'
+SQLserver_port = 3306
+database_name = 'dehydration2'
+sql_userid = 'azumi'
+sql_userpass = 'mamiya'
+#sql_userid = 'mutsu624'
+#sql_userpass = '624mutsu'
 
 #my_function内のみ使用
 #すべてのユーザーのIDとパスを表示
@@ -38,7 +41,7 @@ def get_user_dic():
 
 #my_function内のみ使用
 def get_user_info():
-    user_info=[]
+    user_info = []
     conn = mysql.connector.connect(
         host = SQLserver_host,
         port = SQLserver_port,
@@ -125,9 +128,9 @@ def sql_data_send(user_name,
                   humidity,
                   temp):
     
-    user_dic=get_user_dic()
-    if user_pass==user_dic[user_name]:
-        user_dic=get_user_dic()
+    user_dic = get_user_dic()
+    if user_pass == user_dic[user_name]:
+        user_dic = get_user_dic()
         
         conn = mysql.connector.connect(
             host = SQLserver_host,
@@ -141,13 +144,19 @@ def sql_data_send(user_name,
         
         if (not connected):
             conn.ping(True)
-        Rtime=datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        tmp_day=datetime.date.today()
-        day=tmp_day.strftime('%Y-%m-%d')
-        cur.execute('''INSERT INTO `{}` (`id`,`day`, `weather`, `humidity`, `training`,`time`,
-                    `bweight`,`aweight`,`water`,`temp`,`rtime`) 
-                    VALUES ('{}','{}',{},{},'{}',{},{},{},{},{},{})'''
-                    .format('data',user_name,day,weather,humidity,training,time,bweight,aweight,water,temp,Rtime))
+        Rtime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")\
+                 + user_name
+        print(type(Rtime))
+        tmp_day = datetime.date.today()
+        day = tmp_day.strftime('%Y-%m-%d')
+        cur.execute(
+                '''INSERT INTO `{}` (`id`,`day`, `weather`, `humidity`, 
+                `training`,`time`, `bweight`,`aweight`,`water`,`temp`,`rtime`) 
+                    VALUES ('{}', '{}', {}, {},'{}',{},{},{},{},{},'{}')
+                '''.format('data', user_name, day, weather, humidity,
+                            training, time, bweight, aweight, water,
+                            temp, Rtime)
+                    )
         
         conn.commit()
         cur.close()
@@ -158,7 +167,7 @@ def sql_data_send(user_name,
 def sql_data_get(user_nm):
     #user_name ←のアカウントを使って
     #user_nm ←のデータを取得
-    data_list=[]
+    data_list = []
     conn = mysql.connector.connect(
         host = SQLserver_host,
         port = SQLserver_port,
@@ -185,13 +194,13 @@ def sql_data_get(user_nm):
                           'temp':row[9]})#湿度
     cur.close()
     conn.close()
-    data_list.sort(key=lambda x:x['day'])
+    data_list.sort(key = lambda x:x['day'])
     
     return data_list
 
 def sql_data_get_latest_all():
     today = datetime.date.today().strftime('%Y-%m-%d')
-    yesterday=(datetime.date.today()-datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+    yesterday = (datetime.date.today()-datetime.timedelta(days=1)).strftime('%Y-%m-%d')
     data_list=[]
     user_dic=get_user_dic()
     for u_name in user_dic.keys():
@@ -210,7 +219,7 @@ def sql_data_get_latest_all():
         cur.execute('''SELECT `id`,`day`, `weather`, `humidity`, `training`,`time`,
                         `bweight`,`aweight`,`water`,`temp` FROM `{}` WHERE day='{}'or day='{}'  '''
                         .format("data",today,yesterday))
-        data_list=[]
+        data_list = []
         for row in cur.fetchall():
             data_list.append({'day':row[1],#日
                               'username':row[0],
@@ -249,11 +258,13 @@ def sql_message_send(userid,
         connected = conn.is_connected()        
         if (not connected):
             conn.ping(True)
+        Rtime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")\
+                 + userid
         tmp_day=datetime.date.today()
         day=tmp_day.strftime('%Y-%m-%d')
-        cur.execute('''INSERT INTO `{}` (`day`,`tolist`, `fromlist`, `title`, `contents`) 
-                    VALUES ('{}','{}','{}','{}','{}')'''
-                    .format('board',day,group,userid,title,contents))
+        cur.execute('''INSERT INTO `{}` (`day`,`tolist`, `fromlist`, `title`, `contents`, `rtime`) 
+                    VALUES ('{}','{}','{}','{}','{}', '{}')'''
+                    .format('board',day,group,userid,title,contents,Rtime))
         
         conn.commit()
         cur.close()
@@ -354,7 +365,7 @@ def sql_data_per_day(day):
     return data_list
 
 def sql_makecsv(file):
-    data_list=[]
+    data_list = []
     conn = mysql.connector.connect(
         host = SQLserver_host,
         port = SQLserver_port,
@@ -367,7 +378,7 @@ def sql_makecsv(file):
     
     if (not connected):
         conn.ping(True)
-    if file=="data":
+    if file == "data":
         cur.execute('''SELECT `id`,`day`, `weather`, `humidity`, `training`,`time`,
                         `bweight`,`aweight`,`water`,`temp`,`rtime` FROM `{}`'''.format("data"))
         for row in cur.fetchall():
@@ -387,12 +398,13 @@ def sql_makecsv(file):
         
         with open('data.csv', 'w', newline="") as csv_file:
             fieldnames = ['id', 'day','weather','humidity','training','time','bweight','aweight','water','temp','rtime']
-            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            writer = csv.DictWriter(csv_file, fieldnames = fieldnames)
             writer.writeheader()
             for d in data_list:
                 writer.writerow(d)
-        
-    elif file=="user":
+        return True
+    
+    elif file == "user":
         cur.execute('''SELECT `{}`,`{}`,`{}`,`{}`,`{}` FROM `{}` '''
                 .format("id","type","rname","org","year","user_list"))
         for row in cur.fetchall():
@@ -401,18 +413,19 @@ def sql_makecsv(file):
                      'rname':row[2],
                      'type':row[1],
                      'org':row[3],
-                     'year':row[4]})
+                     'year':row[4]
+                     })
 
         cur.close()
         with open('user_list.csv', 'w', newline="") as csv_file:
-            fieldnames = ['id','password', 'type','rname','org', 'year']
-            writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+            fieldnames = ['id', 'password', 'type', 'rname', 'org', 'year']
+            writer = csv.DictWriter(csv_file, fieldnames = fieldnames)
             writer.writeheader()
             for d in data_list:
                 writer.writerow(d)
-        
-        
-    return True
+        return True
+    return False
+print(sql_makecsv('user'))
 #--Written By Mutsuyo-----------------------------------
 def dassui_ritu(wb,wa):#脱水率
     z=round((wa-wb)/wb*100,1)#wb運動前　wa運動後

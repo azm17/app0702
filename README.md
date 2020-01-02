@@ -80,6 +80,65 @@ herokuにアップしたテスト用のアプリはアクセスはこちら[一�
 ※ALLは全員へ
 
 ## 2.4. アプリケーションサーバーのプログラム説明
+
+### プログラム my_function2_csv.py
+#### get_user_dic()
+すべてのユーザーのIDとパスワードを取得（{'username':'password'}） 例:{'azumi':'mamiya','daiki':'miyagawa'}
+
+#### def get_user_info()
+すべてのユーザーのID，パスワード，種別，実名，組織，年度を取得（辞書形式）
+
+#### sql_ALLuser_profile(user_name, user_pass)
+すべてのユーザーのID，種別，実名，組織，年度を取得（辞書形式,パスワード以外,)
+
+#### kakunin(user_name, user_pass)
+一般ユーザー用のログイン処理，user_nameとuser_passが正しければTrue，誤りであればFalseを返す．
+
+#### admin_kakunin(user_name, user_pass)
+管理者用ログイン処理
+
+#### get_admin()
+管理者のリストを取得
+
+#### sql_data_send(user_name, user_pass, bweight, aweight, training, time, water, weather, humidity, temp)
+
+データを追加する
+
+#### sql_data_get(user_nm)
+
+データを取得する
+
+#### sql_data_get_latest_all()
+
+最近のデータを取得する
+
+#### sql_message_send(userid, userpass, group, title, contents)
+掲示板に文章を追加
+
+#### sql_message_get(userid, userpass, max_messages = 10)
+掲示板の内容を取得
+
+#### adduser(admin,adminpass,info)
+ユーザーを追加する
+
+#### sql_data_per_day(day)
+day日のみのデータを取得？
+
+
+
+#### sql_makecsv(file)
+CSVデータを生成する
+
+
+
+
+
+
+
+
+
+#### kakunin(user_name, user_pass)
+
 ### プログラム server.py
 #### <一般ユーザー用>
 #### 関数 entry()

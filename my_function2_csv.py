@@ -6,79 +6,92 @@ Created on Fri May 17 12:52:30 2019
          Daiki Miyagawa
 """
 
-#import mysql.connector
+# import mysql.connector
 import datetime
 import pandas as pd
+import shutil
 
-SQLserver_host='192.168.0.32'
-SQLserver_port=3306
-database_name='hydration_db'
-sql_userid='sql_azumi'
-sql_userpass='sql_mamiya'
+# SQLserver_host = '192.168.0.32'
+# SQLserver_port = 3306
+# database_name = 'hydration_db'
+# sql_userid = 'sql_azumi'
+# sql_userpass = 'sql_mamiya'
 
 #すべてのユーザーのIDとパスを表示
 def get_user_dic():
-    user_dic={}
+    user_dic = {}
+    #ユーザーリストからidとpassを取得
     df = pd.read_csv('./database/user_list.csv',
-                     index_col=0,
-                     encoding="shift-jis")#ユーザーリストからidとpassを取得
+                     index_col = 0,
+                     encoding = "shift-jis")
+    
     for i in range(len(df)):
-        user_dic[df.at[i,'id']]=df.at[i,'password']
+        user_dic[df.at[i,'id']] = df.at[i,'password']
+    
     return user_dic
 
 def get_user_info():
-    user_info=[]
+    user_info = []
+    #ユーザーリストからidとpassを取得
     df = pd.read_csv('./database/user_list.csv',
-                     index_col=0,
-                     encoding="shift-jis")#ユーザーリストからidとpassを取得
+                     index_col = 0,
+                     encoding = "shift-jis")
+    
     for i in range(len(df)):
         user_info.append({'id':df.at[i,'id'],
                           'password':df.at[i,'password'],
                           'type':str(df.at[i,'type']),
                           'rname':df.at[i,'rname'],
                           'org':df.at[i,'org'],
-                          'year':df.at[i,'org']})
+                          'year':df.at[i,'org']
+                          }
+                        )
+    
     return user_info
 
 def sql_ALLuser_profile(user_name, user_pass):
-    user_prof={}
+    #すべてのユーザのpass以外情報を取得
+    user_prof = {}
     df = pd.read_csv('./database/user_list.csv',
-                     index_col=0,
-                     encoding="shift-jis")#すべてのユーザのpass以外情報を取得
+                     index_col = 0,
+                     encoding = "shift-jis")
+    
     for i in range(len(df)):
-        user_prof[df.at[i,'id']]={'rname':df.at[i,'rname'],
-                                  'type':df.at[i,'type'],
-                                  'org':df.at[i,'org'],
-                                  'year':df.at[i,'year']}
+        user_prof[df.at[i,'id']] = {'rname':df.at[i,'rname'],
+                                    'type':df.at[i,'type'],
+                                    'org':df.at[i,'org'],
+                                    'year':df.at[i,'year']
+                                   }
+    
     return user_prof
 
 #ログイン処理
 def kakunin(user_name, user_pass):
-    connected=False
-    user_dic=get_user_dic()
+    connected = False
+    user_dic = get_user_dic()
     if user_name in user_dic.keys():
-        if user_pass==user_dic[user_name]:
-            connected=True
+        if user_pass == user_dic[user_name]:
+            connected = True
     return connected
 
 def admin_kakunin(user_name, user_pass):
-    connected=False
-    user_info=get_user_info()
+    connected = False
+    user_info = get_user_info()
     for i in range(len(user_info)):
-        if user_name==user_info[i]['id'] \
-            and user_pass==user_info[i]['password'] \
-                and user_info[i]['type']=='0':
-            connected=True
+        if user_name == user_info[i]['id'] \
+            and user_pass == user_info[i]['password'] \
+                and user_info[i]['type'] == '0':
+            connected = True
             break
     return connected
+
 def get_admin():
-    user_info=get_user_info()
-    admin=[]
+    user_info = get_user_info()
+    admin = []
     for i in range(len(user_info)):
-        if user_info[i]['type']=='0':
+        if user_info[i]['type'] == '0':
             admin.append(user_info[i]['id'])
     return admin
-#print(admin_kakunin('azumi','mamiya'))
 
 def sql_data_send(user_name,
                   user_pass,
@@ -91,14 +104,14 @@ def sql_data_send(user_name,
                   humidity,
                   temp):
     
-    user_dic=get_user_dic()
-    if user_pass==user_dic[user_name]:
+    user_dic = get_user_dic()
+    if user_pass == user_dic[user_name]:
         df = pd.read_csv('./database/data.csv',
                          index_col=0,
                          encoding="shift-jis")
         
-        tmp_day=datetime.date.today()
-        day=tmp_day.strftime('%Y-%m-%d')
+        tmp_day = datetime.date.today()
+        day = tmp_day.strftime('%Y-%m-%d')
         columns = ["id",
                    "day",
                    "weather",
@@ -110,7 +123,9 @@ def sql_data_send(user_name,
                    "water",
                    "temp",
                    "rtime"]
-        Rtime=datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        Rtime = datetime.datetime.now().strftime("%Y%m%d%H%M%S")\
+                 + user_name
+        
         tmp_se = pd.Series([user_name,
                             day,
                             weather,
@@ -123,7 +138,7 @@ def sql_data_send(user_name,
                             temp,
                             Rtime], index=columns, name=str(df.shape[0]))
         df = df.append(tmp_se)
-        df.to_csv('./database/data.csv',encoding="shift-jis")
+        df.to_csv('./database/data.csv', encoding="shift-jis")
     return  'OK'
  
 def sql_data_get(user_nm):
@@ -229,7 +244,7 @@ def sql_message_get(userid, userpass, max_messages = 10):
                 'title': df['title'][i],
                 'contents': df['contents'][i],
             })
-            data_list.sort(key=lambda x:x['day'])
+            data_list.sort(key = lambda x:x['day'])
             data_list.reverse()
     
     if len(data_list) > max_messages:
@@ -259,13 +274,13 @@ def adduser(admin,adminpass,info):
 def sql_data_per_day(day):
     #user_name ←のアカウントを使って
     #user_nm ←のデータを取得
-    data_list=[]
+    data_list = []
     tmp_df = pd.read_csv('./database/data.csv',
-                     index_col=0,
-                     encoding="shift-jis")
+                     index_col = 0,
+                     encoding = "shift-jis")
     
-    df=tmp_df[tmp_df['day'] ==day].reset_index()
-    data_list=[]
+    df = tmp_df[tmp_df['day'] == day].reset_index()
+    data_list = []
     for i in range(len(df)):
         data_list.append({'day':df['day'][i],#日
                           'wa':df['aweight'][i],#運動後体重
@@ -280,7 +295,14 @@ def sql_data_per_day(day):
     return data_list
 
 def sql_makecsv(file):
-    return True
+    hantei = False
+    if file == 'user':
+        shutil.copy('./database/user_list.csv', './user_list.csv')
+        hantei = True
+    elif file == 'data':
+        shutil.copy('./database/data.csv', './data.csv')
+        hantei = True
+    return hantei
 #--Written By Mutsuyo-----------------------------------
 def dassui_ritu(wb,wa):#脱水率
     z=round((wa-wb)/wb*100,1)#wb運動前　wa運動後
@@ -305,7 +327,7 @@ def hakkann_ryo_ex1(wb,water):#運動時間あたり-1%発汗量(飲水必要量
 #--Written By Mutsuyo-----------------------------------
 
 def generateComment(data):
-    sentence='おつかれさま。'
+    sentence = 'おつかれさま。'
     if 0<=data['dehydraterate']:
         sentence+='トレーニング中水分補給がんばった!!'
         img='suzuki1.jpg'
