@@ -1,20 +1,27 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Jun 29 17:56:33 2019
+部活Do!食べる部 Let's hydrate！ v1.1
 
-v1.0 December 29th, 2019, Launched
-v1.1 
+History:
+    Version1.x:
+         v1.0 June 29th, 2019, Started developing
+              December 29th, 2019, Launched
+         v1.1 December 30th, 2019, Revised
+        
+    Version2.x:
+         None
 
 @author: Azumi Mamiya, Shizuoka University, (Python, HTML, CSS)
          Daiki Miyagawa, Shizuoka University, (Python, HTML, CSS)
          Kenshin Iwakura, Shizuoka University, (HTML, CSS)
 
-pip3 install flask
-pip3 install mysql-connector-python
-pip3 import datetime
+Note:
+    pip3 install flask
+    pip3 install mysql-connector-python
+    pip3 import datetime
 """
 
-from flask import Flask,request,render_template,make_response,redirect
+from flask import Flask, request, render_template, make_response, redirect
 import my_function2_sql as my_func
 import datetime
 import matplotlib.pyplot as plt
@@ -68,19 +75,20 @@ def show():
         
     user_prof = my_func.sql_ALLuser_profile(userid, userpass)
     
-    if my_func.kakunin(userid,userpass):
+    if my_func.kakunin(userid, userpass):
         pass
     else:
         sentence = 'IDまたはPASSが違います。正しいパスワードを入力してください。'
         resp = make_response(render_template('error.html',
                                          sentence = sentence))
         return resp  
-    print("ID:{} GET ".format(userid), end='')
+    # print("ID:{} GET ".format(userid), end='')
     try:
         data = my_func.sql_data_get(userid)
         posts = []
         for d in reversed(data):
-            neccessary1_tmp=round(float(d['wb']*0.01)+float(d['moi']),1)
+            neccessary1_tmp \
+                = round(float(d['wb']*0.01)+float(d['moi']),1)
             if neccessary1_tmp <= 0:
                 neccessary1_tmp = 0
             posts.append({
@@ -145,7 +153,7 @@ def show():
                 'title': d['title'],
                 'contents': d['contents']}
             )
-        print('Success')
+        # print('Success')
         
         resp = make_response(render_template('main.html',
                                              title = 'taberube.jp',
@@ -179,7 +187,7 @@ def hello():
     hantei = my_func.kakunin(userid,userpass)
     user_prof = my_func.sql_ALLuser_profile(id, userpass)
     
-    print("ID:{} TRY LOGIN ".format(userid) + str(hantei))
+    # print("ID:{} TRY LOGIN ".format(userid) + str(hantei))
     if hantei:# lonin success
         # 11~3月のみ雪マークを追加
         weather = [{'num' : '{}'.format(i),
@@ -231,7 +239,7 @@ def enter():
          そんなわけありません。)'''.format(request.form['wb'],request.form['wa'])
         return make_response(render_template('error.html',sentence=sentence))
     
-    print(request.form['time'])
+    # print(request.form['time'])
     if request.form['time'] == '' \
         or request.form['temp'] == '' \
             or request.form['sitsu'] == ''\
@@ -244,7 +252,7 @@ def enter():
                 +'(detail: 運動時間または飲水量を正の値にしてください。)'
         return make_response(render_template('error.html',sentence=sentence))
     ##
-    print("ID:{} GET ".format(userid))
+    # print("ID:{} GET ".format(userid))
     try:
         weight_after = float(request.form['wa'])
         weight_before = float(request.form['wb'])
@@ -262,7 +270,6 @@ def enter():
                               moisture,tenki,
                               shitsudo,
                               temp)
-        
         
         data = my_func.sql_data_get(userid)
         
@@ -292,7 +299,7 @@ def enter():
         resp = make_response(redirect_to_index)
         resp.set_cookie('user', userid)
         resp.set_cookie('pass', userpass)
-        #showへリダイレクト
+        # showへリダイレクト
         return resp
     
     except Exception as error:
@@ -314,7 +321,7 @@ def admin_entry():
     return resp
 
 # 管理者ホームページ
-@app.route("/admin/show", methods=["POST"])
+@app.route("/admin/show", methods = ["POST"])
 def admin_show():
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
@@ -330,7 +337,7 @@ def admin_show():
         return make_response(render_template('error.html',sentence=sentence))
         
     posts=[]
-    print("ID:{} GET ".format(admin),end='')
+    # print("ID:{} GET ".format(admin),end='')
     if admin == '' or adminpass == '':
         sentence = '正しいIDとPASSを入力してください。'
         return make_response(render_template('error.html',
@@ -353,7 +360,7 @@ def admin_show():
             sentence = '正しいIDとPASSを入力してください。'
             return make_response(render_template('error.html',sentence=sentence))
         except Exception as error:
-            print('Fail')
+            # print('Fail')
             sentence = 'do not connect sql server by your username \
                     \n or making html error:\n{}'.format(error.__str__())
             return make_response(render_template('error.html',sentence=sentence))
@@ -444,7 +451,7 @@ def admin_watch_show():
                   'w1':round(d['wb']*0.99,1),
                   'necessary1':neccessary1_tmp
                 })
-            print('Success')
+            # print('Success')
             
             resp = make_response(
                     render_template(
@@ -472,7 +479,7 @@ def admin_watch_show():
 def admin_latest():
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
-    user_prof=my_func.sql_ALLuser_profile(admin, adminpass)
+    user_prof = my_func.sql_ALLuser_profile(admin, adminpass)
     
     if admin == '' or adminpass == '':
         sentence = 'cannot access!'
@@ -487,14 +494,15 @@ def admin_latest():
                                              sentence=sentence))
     
     try:
-        print('Success')
+        # print('Success')
         try:
             data = my_func.sql_data_get_latest_all()
             posts = []
             for d in reversed(data):
-                neccessary1_tmp=round(float(d['wb']*0.01)+float(d['moi']),1)
-                if neccessary1_tmp<=0:
-                    neccessary1_tmp=0
+                neccessary1_tmp \
+                    = round(float(d['wb']*0.01)+float(d['moi']),1)
+                if neccessary1_tmp <= 0:
+                    neccessary1_tmp = 0
                 posts.append({
                   'date':d['day'],#日
                   'bweight':d['wb'],#運動前体重
@@ -511,7 +519,7 @@ def admin_latest():
                   'w1':round(d['wb']*0.99,1),
                   'necessary1':neccessary1_tmp}# ユーザの本名
                 )
-            print('Success')
+            # print('Success')
             posts = reversed(sorted(posts, key=lambda x:x['date']))
             return render_template(
                     'admin_latest.html', 

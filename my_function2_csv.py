@@ -4,6 +4,8 @@ Created on Fri May 17 12:52:30 2019
 
 @author: Azumi Mamiya
          Daiki Miyagawa
+
+version: v1.1
 """
 
 # import mysql.connector

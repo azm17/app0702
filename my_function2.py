@@ -3,6 +3,7 @@
 Created on Fri May 17 12:52:30 2019
 
 @author: azumi
+
 """
 
 import mysql.connector
