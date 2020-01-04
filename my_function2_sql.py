@@ -17,10 +17,10 @@ SQLserver_host = '192.168.0.14'
 # SQLserver_host = 
 SQLserver_port = 3306
 database_name = 'dehydration2'
-sql_userid = 'azumi'
-sql_userpass = 'mamiya'
-# sql_userid = 'mutsu624'
-# sql_userpass = '624mutsu'
+# sql_userid = 'azumi'
+# sql_userpass = 'mamiya'
+sql_userid = 'mutsu624'
+sql_userpass = '624mutsu'
 
 # すべてのユーザーのIDとパスを表示，my_function内のみ使用
 def get_user_dic():

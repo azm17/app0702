@@ -35,7 +35,7 @@ server_host = '192.168.0.12'
 # server_host = '192.168.2.102'
 # server_host = '192.168.56.1'
 # server_host = '192.168.0.6'
-# server_host = 'test-server0701.herokuapp.com'
+# server_host = 'eiyo-kanri-hydration.herokuapp.com'
 
 
 # Server Port
