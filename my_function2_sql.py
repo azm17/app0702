@@ -12,13 +12,10 @@ import mysql.connector
 import datetime
 import csv
 
-#SQLserver_host = '192.168.0.32'
-SQLserver_host = '192.168.0.14'
+# SQLserver_host = '192.168.0.32'
 # SQLserver_host = 
 SQLserver_port = 3306
 database_name = 'dehydration2'
-# sql_userid = 'azumi'
-# sql_userpass = 'mamiya'
 sql_userid = 'mutsu624'
 sql_userpass = '624mutsu'
 
@@ -433,44 +430,48 @@ def sql_makecsv(file):
         return True
     return False
 # --Written By Mutsuyo-----------------------------------
-def dassui_ritu(wb,wa):#脱水率
-    z=round((wa-wb)/wb*100,1)#wb運動前　wa運動後
+def dassui_ritu(wb, wa):#脱水率
+    z = round((wa - wb) / wb * 100, 1)#wb運動前　wa運動後
     return z
 
-def hakkann_ritu(wb,wa,water,time):#1時間あたり発汗量
-    z=round((wb-wa+water)/time,2)#water運動中飲水量?　#time運動時間
+def hakkann_ritu(wb, wa, water, time):#1時間あたり発汗量
+    z = round((wb - wa + water)/time, 2)#water運動中飲水量?　#time運動時間
     return z
 
-def hakkann_ryo(wb,wa,water):#運動中発汗量(飲水必要量)
-    z=round(wb-wa+water,2)
+def hakkann_ryo(wb, wa, water):#運動中発汗量(飲水必要量)
+    z = round(wb - wa + water, 2)
     return z
 
-def hakkann_ritu_ex1(wb,water,time):#1時間あたり-1%発汗量
-    z=round((wb-wb*0.99+water)/time,2)#water運動中飲水量?　#time運動時間
+def hakkann_ritu_ex1(wb, water, time):#1時間あたり-1%発汗量
+    z = round((wb - wb * 0.99 + water) / time, 2)#water運動中飲水量?　#time運動時間
     return z
 
 def hakkann_ryo_ex1(wb,water):#運動時間あたり-1%発汗量(飲水必要量)
-    z=round(wb-wb*0.99+water,2)#water運動中飲水量?　#time運動時間
+    z = round(wb-wb*0.99+water,2)#water運動中飲水量?　#time運動時間
     return z
 # -------------------------------------------------------
 
 def generateComment(data):
-    sentence='おつかれさま。'
-    if 0<=data['dehydraterate']:
-        sentence+='トレーニング中水分補給がんばった!!'
-        img='suzuki1.jpg'
-    elif -1.0<data['dehydraterate']<0:
-        sentence+='トレーニング中の水分補給大事。この調子!!'
-        img='suzuki2.jpg'
-    elif -2.0<=data['dehydraterate']<=-1.0:
+    sentence = 'おつかれさま。'
+    if 0 <= data['dehydraterate']:
+        sentence += 'トレーニング中水分補給がんばった!!'
+        img = 'suzuki1.jpg'
+    elif -1.0 < data['dehydraterate'] < 0:
+        sentence += 'トレーニング中の水分補給大事。この調子!!'
+        img = 'suzuki2.jpg'
+    elif -2.0 <= data['dehydraterate'] <= -1.0:
     #elif -1.0 < data['dehydraterate']:
-        sentence+='水分補給もう少し。目指せ脱水率-1%以内でパフォーマンスup!'
-        img='suzuki3.jpg'
-    elif data['dehydraterate']<-2.0:
-        sentence+='''トレーニング中水分不足だよ。水分補給を増やして、
-                    熱中症や食欲不振を予防しよう。目指せ脱水率-1%以内。'''
-        img='suzuki4.jpg'
+        sentence += '水分補給もう少し。目指せ脱水率-1%以内でパフォーマンスup!'
+        img = 'suzuki3.jpg'
+    elif data['dehydraterate'] < -2.0:
+        sentence += '''トレーニング中水分不足だよ。水分補給を増やして、
+                    熱中症や食欲不振を予防しよう。目指せ脱水率-1%以内。
+                    '''
+        img = 'suzuki4.jpg'
     else:
-        img='suzuki1.jpg'
-        sentence='ERROR'
-    return {'sentence':sentence,'img':img}
+        img = 'suzuki1.jpg'
+        sentence = 'ERROR'
+    return {
+            'sentence':sentence,
+            'img'     :img
+            }

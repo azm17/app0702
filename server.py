@@ -31,11 +31,11 @@ import glob
 
 app = Flask(__name__)
 # Server Host
-server_host = '192.168.0.12'
-# server_host = '192.168.2.102'
+# server_host = '192.168.0.12'
+server_host = '192.168.2.102'
 # server_host = '192.168.56.1'
 # server_host = '192.168.0.6'
-# server_host = 'eiyo-kanri-hydration.herokuapp.com'
+# server_host = 'eiyo-kanri-hydration'
 
 
 # Server Port
@@ -43,14 +43,13 @@ server_port = 50000
 server_address = server_host + ':' + str(server_port)
 #server_address = server_host
 
-#SQL server
-#SQLserver_host = '192.168.0.32'
-#SQLserver_port = 3306
-#database_name = 'hydration_db'
-#sql_userid = 'sql_azumi'
-#sql_userpass = 'sql_mamiya'
-
-tenki_dic = {'1':'🌞️','2':'☁️','3':'🌧️','4':'❄️'}
+tenki_dic = {'0':' ',
+             '1':'🌞️',
+             '2':'☁️',
+             '3':'🌧️',
+             '4':'❄️',
+             '5':'室内',
+             '13':'🌞️→🌧️'}
 
 # send login form for general users
 @app.route("/")
@@ -82,31 +81,38 @@ def show():
         resp = make_response(render_template('error.html',
                                          sentence = sentence))
         return resp  
-    # print("ID:{} GET ".format(userid), end='')
+
     try:
         data = my_func.sql_data_get(userid)
         posts = []
         for d in reversed(data):
             neccessary1_tmp \
-                = round(float(d['wb']*0.01)+float(d['moi']),1)
+                = round(float(d['wb'] * 0.01) + float(d['moi']), 1)
+            
             if neccessary1_tmp <= 0:
                 neccessary1_tmp = 0
+            
+            shitsudo = d['shitsudo']
+            temp = d['temp']
+            if int(shitsudo) == 1111:
+                shitsudo = '??'
+            if int(temp) == 1111:
+                temp = '??'
             posts.append({
-                  'date' : d['day'],#日
-                  'bweight' : d['wb'],#運動前体重
-                  'aweight' : d['wa'],#運動後体重
-                  'training' : d['contents'][0:10],#トレーニング内容
-                  'period' : d['time'],#運動時間
-                  'intake' : d['moi'],#飲水量
-                  'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
-                  'dehydrateval' : str(round(float(d['wb'])-float(d['wa']),1)),#脱水量
-                  'tenki':str(tenki_dic[str(d['tenki'])]),#天気
-                  'shitsudo':d['shitsudo'],#湿度
-                  'temp':d['temp'],
-                  'dassui1':round(my_func.hakkann_ritu_ex1(d['wb'],d['wa'],d['time']),1),
-                  'necessary':round(my_func.hakkann_ryo(d['wb'],d['wa'],d['moi']),1),
-                  'necessary1':neccessary1_tmp,
-                  'w1':round(d['wb']*0.99,1)
+                  'date'         :d['day'],# 日
+                  'bweight'      :d['wb'],# 運動前体重
+                  'aweight'      :d['wa'],# 運動後体重
+                  'training'     :d['contents'][0:10],# トレーニング内容
+                  'period'       :d['time'],# 運動時間
+                  'intake'       :d['moi'],# 飲水量
+                  'dehydraterate':my_func.dassui_ritu(d['wb'], d['wa']),# 脱水率
+                  'tenki'        :str(tenki_dic[str(d['tenki'])]),# 天気
+                  'shitsudo'     :shitsudo,# 湿度
+                  'temp'         :temp,# 気温
+                  'dassui1'      :round(my_func.hakkann_ritu_ex1(d['wb'], d['wa'], d['time']), 1),
+                  'necessary'    :round(my_func.hakkann_ryo(d['wb'], d['wa'], d['moi']), 1),
+                  'necessary1'   :neccessary1_tmp,
+                  'w1'           :round(d['wb'] * 0.99, 1)
                 })
         if len(posts) > 0:
             latest = posts.pop(0)
@@ -116,27 +122,29 @@ def show():
             
         else:
             latest = {
-                  'date' : '今回',#日
-                  'bweight' : 'No data',#運動前体重
-                  'aweight' : 'No data',#運動後体重
-                  'training' : 'No data',#トレーニング内容
-                  'period' : 'No data',#運動時間
-                  'intake' : 'No data',#飲水量
-                  'dehydraterate' : 'No data',#脱水率
-                  'dehydrateval' : 'No data',#脱水量
-                  'tenki':'No data',#天気
-                  'shitsudo':'No data',#湿度
-                  'temp':'No data',
-                  'dassui1':'No data',
-                  'necessary':'No data',
-                  'necessary1':'No data',
-                  'w1':'No data'}
+                  'date'         :'今回',   #日
+                  'bweight'      :'No data',# 運動前体重
+                  'aweight'      :'No data',# 運動後体重
+                  'training'     :'No data',# トレーニング内容
+                  'period'       :'No data',# 運動時間
+                  'intake'       :'No data',# 飲水量
+                  'dehydraterate':'No data',# 脱水率
+                  # 'dehydrateval' :'No data',# 脱水量
+                  'tenki'        :'No data',# 天気
+                  'shitsudo'     :'No data',# 湿度
+                  'temp'         :'No data',
+                  'dassui1'      :'No data',
+                  'necessary'    :'No data',
+                  'necessary1'   :'No data',
+                  'w1'           :'No data'}
             
             comment = '''初めまして。このアプリでは、
-                 日々のトレーニング後の脱水量を記録していきます。
-                 最初のデータを入力しましょう。
-                 下の「データ入力」ボタンから結果を登録できます。
-                 また、「アスリートのみなさんへ」は、このアプリを利用している全員向けのコメントです。'''
+                     日々のトレーニング後の脱水量を記録していきます。
+                     最初のデータを入力しましょう。
+                     下の「データ入力」ボタンから結果を登録できます。
+                     また、「アスリートのみなさんへ」は、
+                     このアプリを利用している全員向けのコメントです。
+                     '''
             
             img = 'suzuki1.png'
         messages = my_func.sql_message_get(
@@ -147,13 +155,13 @@ def show():
         texts = []
         for d in messages:
             texts.append({
-                'day': d['day'],
-                'rname': user_prof[d['userid']]['rname'],
-                'group': d['group'],
-                'title': d['title'],
-                'contents': d['contents']}
+                'day'     :d['day'],
+                'rname'   :user_prof[d['userid']]['rname'],
+                'group'   :d['group'],
+                'title'   :d['title'],
+                'contents':d['contents']
+                }
             )
-        # print('Success')
         
         resp = make_response(render_template('main.html',
                                              title = 'taberube.jp',
@@ -179,7 +187,7 @@ def show():
         return make_response(render_template('error.html',
                                              sentence=sentence))
 
-# send entry form for data
+# Send entry form for data
 @app.route("/hello", methods = ["GET","POST"])
 def hello():
     userid = request.cookies.get('user')
@@ -187,14 +195,14 @@ def hello():
     hantei = my_func.kakunin(userid,userpass)
     user_prof = my_func.sql_ALLuser_profile(id, userpass)
     
-    # print("ID:{} TRY LOGIN ".format(userid) + str(hantei))
     if hantei:# lonin success
         # 11~3月のみ雪マークを追加
         weather = [{'num' : '{}'.format(i),
                     'moji' : tenki_dic[i]}
                      for i in tenki_dic.keys()
-                         if not(4<=datetime.datetime.today().month <= 10) 
-                             and i=='4' or i=='1' or i=='2' or i=='3']
+                         #if not(4 <= datetime.datetime.today().month <= 10) 
+                         #    and i=='4' or i=='0' or i=='1' or i=='2' or i=='3'
+                             ]
         # 飲水量の選択肢を追加
         water = ['{:.2f}'.format(round(i*0.05,2))\
                      for i in range(201)]
@@ -212,7 +220,7 @@ def hello():
         return make_response(render_template('error.html',
                                              sentence = sentence))
 
-# send data to sql server
+# Send data to sql server
 @app.route("/enter", methods=["GET","POST"])
 def enter():
     userid = request.cookies.get('user')
@@ -239,7 +247,6 @@ def enter():
          そんなわけありません。)'''.format(request.form['wb'],request.form['wa'])
         return make_response(render_template('error.html',sentence=sentence))
     
-    # print(request.form['time'])
     if request.form['time'] == '' \
         or request.form['temp'] == '' \
             or request.form['sitsu'] == ''\
@@ -249,19 +256,19 @@ def enter():
         return make_response(render_template('error.html',sentence=sentence))
     if float(request.form['time']) < 0 or float(request.form['moi']) < 0:
         sentence = 'ERROR： 情報を送信できませんでした。'\
-                +'(detail: 運動時間または飲水量を正の値にしてください。)'
+                + '(detail: 運動時間または飲水量を正の値にしてください。)'
         return make_response(render_template('error.html',sentence=sentence))
     ##
-    # print("ID:{} GET ".format(userid))
     try:
-        weight_after = float(request.form['wa'])
+        weight_after  = float(request.form['wa'])
         weight_before = float(request.form['wb'])
-        contents = str(request.form['text'])
-        time = float(request.form['time'])
-        moisture = float(request.form['moi'])
-        tenki = int(request.form['tenki'])
-        shitsudo = float(request.form['sitsu'])
-        temp = float(request.form['temp'])
+        time          = float(request.form['time'])
+        moisture      = float(request.form['moi'])
+        shitsudo      = float(request.form['sitsu'])
+        temp          = float(request.form['temp'])
+        contents      = str(request.form['text'])
+        tenki         = int(request.form['tenki'])
+        
         my_func.sql_data_send(userid,#ログインするユーザ
                               userpass,#ログインするユーザのパス
                               weight_before,
@@ -275,25 +282,26 @@ def enter():
         
         posts = []
         for d in reversed(data):
-            neccessary1_tmp = round(float(d['wb']*0.99)-float(d['wa'])+float(d['moi']),1)
+            neccessary1_tmp = round(float(d['wb'] * 0.99) \
+                                    - float(d['wa']) + float(d['moi']), 1)
             if neccessary1_tmp <= 0:
                 neccessary1_tmp = 0
+                
             posts.append({
-                  'date' : d['day'],#日
-                  'bweight' : d['wb'],#運動前体重
-                  'aweight' : d['wa'],#運動後体重
-                  'training' : d['contents'][0:10],#トレーニング内容
-                  'period' : d['time'],#運動時間
-                  'intake' : d['moi'],#飲水量
-                  'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
-                  'dehydrateval' : str(round(float(d['wb'])-float(d['wa']),1)),#脱水量
-                  'tenki':str(tenki_dic[str(d['tenki'])]),#天気
-                  'shitsudo':d['shitsudo'],#湿度
-                  'temp':d['temp'],
-                  'dassui1':round(my_func.hakkann_ritu_ex1(d['wb'],d['wa'],d['time']),1),
-                  'necessary' : round(my_func.hakkann_ryo(d['wb'],d['wa'],d['moi']),1),
-                  'necessary1' : neccessary1_tmp,
-                  'w1' : round(d['wb']*0.99,1)})
+                  'date'         :d['day'],#日
+                  'bweight'      :d['wb'],#運動前体重
+                  'aweight'      :d['wa'],#運動後体重
+                  'training'     :d['contents'][0:10],#トレーニング内容
+                  'period'       :d['time'],#運動時間
+                  'intake'       :d['moi'],#飲水量
+                  'dehydraterate':my_func.dassui_ritu(d['wb'], d['wa']),#脱水率
+                  'tenki'        :str(tenki_dic[str(d['tenki'])]),#天気
+                  'shitsudo'     :d['shitsudo'],#湿度
+                  'temp'         :d['temp'],
+                  'dassui1'      :round(my_func.hakkann_ritu_ex1(d['wb'], d['wa'], d['time']), 1),
+                  'necessary'    :round(my_func.hakkann_ryo(d['wb'], d['wa'], d['moi']), 1),
+                  'necessary1'   :neccessary1_tmp,
+                  'w1'           :round(d['wb'] * 0.99, 1)})
                 
         redirect_to_index = redirect('/show',code=307)
         resp = make_response(redirect_to_index)
@@ -337,7 +345,7 @@ def admin_show():
         return make_response(render_template('error.html',sentence=sentence))
         
     posts=[]
-    # print("ID:{} GET ".format(admin),end='')
+
     if admin == '' or adminpass == '':
         sentence = '正しいIDとPASSを入力してください。'
         return make_response(render_template('error.html',
@@ -360,7 +368,6 @@ def admin_show():
             sentence = '正しいIDとPASSを入力してください。'
             return make_response(render_template('error.html',sentence=sentence))
         except Exception as error:
-            # print('Fail')
             sentence = 'do not connect sql server by your username \
                     \n or making html error:\n{}'.format(error.__str__())
             return make_response(render_template('error.html',sentence=sentence))
@@ -419,7 +426,7 @@ def admin_watch_show():
     if my_func.admin_kakunin(admin, adminpass):
         pass
     else:
-        sentence='初めからやり直してください。'
+        sentence = '初めからやり直してください。'
         return make_response(render_template('error.html',
                                              sentence=sentence))
     
@@ -430,28 +437,36 @@ def admin_watch_show():
         real_name=user_prof[uid_get]['rname']# 見たいユーザの本名
         
         try:
-            data=my_func.sql_data_get(uid_get)
-            posts=[]
+            data = my_func.sql_data_get(uid_get)
+            posts = []
             for d in reversed(data):#dataは辞書形式
-                neccessary1_tmp=round(float(d['wb']*0.01)+float(d['moi']),1)
-                if neccessary1_tmp<=0:
-                    neccessary1_tmp=0
+                neccessary1_tmp \
+                    = round(float(d['wb']*0.01) + float(d['moi']), 1)
+                
+                if neccessary1_tmp <= 0:
+                    neccessary1_tmp = 0
+                shitsudo = d['shitsudo']
+                temp = d['temp']
+                if int(shitsudo) == 1111:
+                    shitsudo = ' '
+                if int(temp) == 1111:
+                    temp = ' '
+                    
                 posts.append({
-                  'date' : d['day'],#日
-                  'bweight' : d['wb'],#運動前体重
-                  'aweight' : d['wa'],#運動後体重
-                  'training' : d['contents'][0:10],#トレーニング内容
-                  'period' : d['time'],#運動時間
-                  'intake' : d['moi'],#飲水量
-                  'dehydraterate' : my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
-                  'dehydrateval' : str(round(float(d['wb'])-float(d['wa']),1)),#脱水量
-                  'tenki':tenki_dic[str(d['tenki'])],#天気
-                  'shitsudo':d['shitsudo'],#湿度
-                  'temp':d['temp'],
-                  'w1':round(d['wb']*0.99,1),
-                  'necessary1':neccessary1_tmp
+                  'date'          :d['day'],#日
+                  'bweight'       :d['wb'],#運動前体重
+                  'aweight'       :d['wa'],#運動後体重
+                  'training'      :d['contents'][0:10],#トレーニング内容
+                  'period'        :d['time'],#運動時間
+                  'intake'        :d['moi'],#飲水量
+                  'dehydraterate' :my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
+                  'necessary'    :round(my_func.hakkann_ryo(d['wb'], d['wa'], d['moi']), 1),
+                  'tenki'         :tenki_dic[str(d['tenki'])],#天気
+                  'shitsudo'      :shitsudo,#湿度
+                  'temp'          :temp,
+                  'w1'            :round(d['wb']*0.99,1),
+                  'necessary1'    :neccessary1_tmp
                 })
-            # print('Success')
             
             resp = make_response(
                     render_template(
@@ -471,8 +486,9 @@ def admin_watch_show():
             return error.__str__()
     else:
         # 不正アクセス（クッキーが空など，ユーザ名，パスワード未設定）
-        sentence='NG: cannot access watch/show'
-        return make_response(render_template('error.html',sentence=sentence))
+        sentence = 'NG: cannot access watch/show'
+        return make_response(render_template('error.html',
+                                             sentence = sentence))
 
 # 管理者用アプリNew!(過去2日の投稿を表示)
 @app.route("/admin/latest", methods=["POST"])
@@ -494,7 +510,6 @@ def admin_latest():
                                              sentence=sentence))
     
     try:
-        # print('Success')
         try:
             data = my_func.sql_data_get_latest_all()
             posts = []
@@ -503,38 +518,44 @@ def admin_latest():
                     = round(float(d['wb']*0.01)+float(d['moi']),1)
                 if neccessary1_tmp <= 0:
                     neccessary1_tmp = 0
+                shitsudo = d['shitsudo']
+                temp = d['temp']
+                if int(shitsudo) == 1111:
+                    shitsudo = ' '
+                if int(temp) == 1111:
+                    temp = ' '
                 posts.append({
-                  'date':d['day'],#日
-                  'bweight':d['wb'],#運動前体重
-                  'aweight':d['wa'],#運動後体重
-                  'training':d['contents'][0:10],#トレーニング内容
-                  'period':d['time'],#運動時間
-                  'intake':d['moi'],#飲水量
+                  'date'         :d['day'],#日
+                  'bweight'      :d['wb'],#運動前体重
+                  'aweight'      :d['wa'],#運動後体重
+                  'training'     :d['contents'][0:10],#トレーニング内容
+                  'period'       :d['time'],#運動時間
+                  'intake'       :d['moi'],#飲水量
                   'dehydraterate':my_func.dassui_ritu(d['wb'],d['wa']),#脱水率
-                  'dehydrateval':str(round(float(d['wb'])-float(d['wa']),1)),#脱水量
-                  'tenki':tenki_dic[str(d['tenki'])],#天気
-                  'shitsudo':d['shitsudo'],#湿度
-                  'temp':d['temp'],
-                  'username':user_prof[d['username']]['rname'],
-                  'w1':round(d['wb']*0.99,1),
-                  'necessary1':neccessary1_tmp}# ユーザの本名
+                  'necessary'    :round(my_func.hakkann_ryo(d['wb'], d['wa'], d['moi']), 1),
+                  'tenki'        :tenki_dic[str(d['tenki'])],#天気
+                  'shitsudo'     :shitsudo,#湿度
+                  'temp'         :temp,
+                  'username'     :user_prof[d['username']]['rname'],
+                  'w1'           :round(d['wb']*0.99,1),
+                  'necessary1'   :neccessary1_tmp}# ユーザの本名
                 )
-            # print('Success')
+
             posts = reversed(sorted(posts, key=lambda x:x['date']))
             return render_template(
                     'admin_latest.html', 
                     title = 'taberube.jp', 
-                    posts=posts,
-                    serverhost=server_address)
+                    posts = posts,
+                    serverhost = server_address)
             
         except Exception as error:
-            sentence='ERROR1: '+error.__str__()
+            sentence = 'ERROR1: '+error.__str__()
             return make_response(render_template('error.html',
-                                                 sentence=sentence))
+                                                 sentence = sentence))
     except Exception as error:
-            sentence='ERROR2: '+error.__str__()
+            sentence = 'ERROR2: '+error.__str__()
             return make_response(render_template('error.html',
-                                                 sentence=sentence))
+                                                 sentence = sentence))
 
 # 管理者用アプリRegister，新規ユーザー追加
 @app.route("/admin/register", methods=["GET","POST"])
@@ -572,10 +593,10 @@ def admin_register():
     info = {
             'newuser':request.form['newuser'],
             'newpass':request.form['newpass'],
-            'rname':request.form['rname'],
-            'type':request.form['type'],
-            'org':request.form['org'],
-            'year':request.form['year']
+            'rname'  :request.form['rname'],
+            'type'   :request.form['type'],
+            'org'    :request.form['org'],
+            'year'   :request.form['year']
             }
     
     if len(request.form['newuser']) == 0 or len(request.form['newpass']) == 0 or \
@@ -584,7 +605,9 @@ def admin_register():
         return make_response(render_template('error.html',sentence=sentence))
     
     if request.form['newuser'] in user_prof.keys():
-        sentence='NG: 新しいユーザーを登録できません。ユーザー名[{}]は使われています。違うユーザー名を指定してください。'.format(request.form['newuser'])
+        sentence = '''NG: 新しいユーザーを登録できません。
+                    ユーザー名[{}]は使われています。違うユーザー名を指定してください。
+                    '''.format(request.form['newuser'])
         return make_response(render_template('error.html',sentence=sentence))
     
     try:
@@ -593,9 +616,9 @@ def admin_register():
             # resp = 'OK'
             resp = make_response(render_template(
                     'admin_register.html',
-                    text=request.form['rname']+'さんを登録しました．',
-                    serverhost=server_address,
-                    year=datetime.datetime.now().year)
+                    text = request.form['rname'] + 'さんを登録しました．',
+                    serverhost = server_address,
+                    year = datetime.datetime.now().year)
             )
             
             return resp
@@ -627,11 +650,11 @@ def admin_message():
     posts = []
     for d in messages:
         posts.append({
-            'day': d['day'],
-            'rname': user_prof[d['userid']]['rname'],
-            'group': d['group'],
-            'title': d['title'],
-            'contents': d['contents']}
+            'day'     :d['day'],
+            'rname'   :user_prof[d['userid']]['rname'],
+            'group'   :d['group'],
+            'title'   :d['title'],
+            'contents':d['contents']}
         )
     
     if request.args.get('status')=='first':
@@ -674,11 +697,11 @@ def admin_message():
         posts = []
         for d in messages:
             posts.append({
-                'day': d['day'],
-                'rname': user_prof[d['userid']]['rname'],
-                'group': d['group'],
-                'title': d['title'],
-                'contents': d['contents']}
+                'day'     :d['day'],
+                'rname'   :user_prof[d['userid']]['rname'],
+                'group'   :d['group'],
+                'title'   :d['title'],
+                'contents':d['contents']}
             )
         
         return render_template(
