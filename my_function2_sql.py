@@ -13,7 +13,7 @@ import datetime
 import csv
 
 # SQLserver_host = '192.168.0.32'
-# SQLserver_host = 
+SQLserver_host = 'eiyo-kanri.taberube.jp'
 SQLserver_port = 3306
 database_name = 'dehydration2'
 sql_userid = 'mutsu624'
@@ -66,7 +66,7 @@ def get_user_info():
     conn.close()
     return user_info
 
-def sql_ALLuser_profile(user_name, user_pass):
+def sql_ALLuser_profile():
     # kakunin(user_name, user_pass)
     user_prof = {}
     conn = mysql.connector.connect(
@@ -91,6 +91,29 @@ def sql_ALLuser_profile(user_name, user_pass):
                  }
     
     return user_prof
+
+# 組織リスト取得
+def get_org():
+    # kakunin(user_name, user_pass)
+    org_dic = {}
+    conn = mysql.connector.connect(
+        host = SQLserver_host,
+        port = SQLserver_port,
+        user = sql_userid,
+        password = sql_userpass,
+        database = database_name,
+    )
+    cur = conn.cursor()
+    connected = conn.is_connected()
+    if (not connected):
+        conn.ping(True)
+    cur.execute('''SELECT `{}`,`{}` FROM `{}` '''
+                .format("org_id","org_name","org_list"))
+    for row in cur.fetchall():
+        org_dic[row[0]] = {'org_name':row[1]}
+    
+    return org_dic
+
 #ログイン処理
 def kakunin(user_name, user_pass):
     connected = False
@@ -110,6 +133,18 @@ def admin_kakunin(user_name, user_pass):
             connected = True
             break
     return connected
+
+def admin_coach_kakunin(user_name, user_pass):
+    connected = False
+    user_info = get_user_info()
+    for i in range(len(user_info)):
+        if user_name == user_info[i]['id'] \
+            and user_pass == user_info[i]['password'] \
+                and user_info[i]['type'] == '0' or '2':
+            connected = True
+            break
+    return connected
+
 # 管理者のリストを取得
 def get_admin():
     user_info = get_user_info()
@@ -165,6 +200,7 @@ def sql_data_send(user_name,
         
         return  'OK'
     return  'NG'
+
 def sql_data_get(user_nm):
     #user_name ←のアカウントを使って
     #user_nm ←のデータを取得
@@ -201,41 +237,56 @@ def sql_data_get(user_nm):
     
     return data_list
 
-def sql_data_get_latest_all():
+def sql_data_get_latest_all(i, org):
     today = datetime.date.today().strftime('%Y-%m-%d')
     yesterday = (datetime.date.today()-datetime.timedelta(days=1)).strftime('%Y-%m-%d')
-    data_list=[]
-    user_dic=get_user_dic()
-    for u_name in user_dic.keys():
-        conn = mysql.connector.connect(
-            host = SQLserver_host,
-            port = SQLserver_port,
-            user = sql_userid,
-            password = sql_userpass,
-            database = database_name,
-        )
-        cur = conn.cursor()
-        connected = conn.is_connected()
+    data_list = []
+    # user_dic = get_user_dic()
+    #for u_name in user_dic.keys():
+    conn = mysql.connector.connect(
+        host = SQLserver_host,
+        port = SQLserver_port,
+        user = sql_userid,
+        password = sql_userpass,
+        database = database_name,
+    )
+    cur = conn.cursor()
+    connected = conn.is_connected()
+    
+    if (not connected):
+        conn.ping(True)
+    
+    if i == 0:    
+        sentence = '''SELECT `id`,`day`, `weather`, `humidity`, `training`,`time`,
+                      `bweight`,`aweight`,`water`,`temp` FROM `{}` WHERE day='{}'or day='{}';
+                    '''.format("data",today,yesterday)
+    else:
+        dic = sql_ALLuser_profile()
+        user_list = [user for user in dic.keys() if org == dic[user]['org']]
+        cond = '('
+        for id in user_list:
+            cond += "id = '{}' or ".format(id)
+        cond = cond[:-3] + ')'
         
-        if (not connected):
-            conn.ping(True)
-        cur.execute('''SELECT `id`,`day`, `weather`, `humidity`, `training`,`time`,
-                        `bweight`,`aweight`,`water`,`temp` FROM `{}` WHERE day='{}'or day='{}'  '''
-                        .format("data",today,yesterday))
-        data_list = []
-        for row in cur.fetchall():
-            data_list.append({'day'     :row[1],#日
-                              'username':row[0],
-                              'tenki'   :row[2],#天気
-                              'shitsudo':row[3],
-                              'contents':row[4],#トレーニング内容
-                              'time'    :row[5],#時間
-                              'wb'      :row[6],#運動前体重
-                              'wa'      :row[7],#運動後体重
-                              'moi'     :row[8],#飲水量
-                              'temp'    :row[9]})#湿度
-        cur.close()
-        conn.close()
+        sentence = '''SELECT `id`,`day`, `weather`, `humidity`, `training`,`time`,
+                      `bweight`,`aweight`,`water`,`temp` FROM `{}` WHERE (day='{}'or day='{}') and {};
+                    '''.format("data", today, yesterday, cond)
+    
+    cur.execute(sentence)
+    data_list = []
+    for row in cur.fetchall():
+        data_list.append({'day'     :row[1],#日
+                          'username':row[0],
+                          'tenki'   :row[2],#天気
+                          'shitsudo':row[3],
+                          'contents':row[4],#トレーニング内容
+                          'time'    :row[5],#時間
+                          'wb'      :row[6],#運動前体重
+                          'wa'      :row[7],#運動後体重
+                          'moi'     :row[8],#飲水量
+                          'temp'    :row[9]})#湿度
+    cur.close()
+    conn.close()
         
     return data_list
 
@@ -335,6 +386,68 @@ def adduser(admin, adminpass, info):
         return  'OK'
     return 'NG'
 
+def addorg(admin, adminpass, info):
+    user_dic = get_user_dic()
+    if adminpass == user_dic[admin]:
+        conn = mysql.connector.connect(
+            host = SQLserver_host,
+            port = SQLserver_port,
+            user = sql_userid,
+            password = sql_userpass,
+            database = database_name,
+        )
+        cur = conn.cursor()
+        connected = conn.is_connected()        
+        if (not connected):
+            conn.ping(True)
+        cur.execute('''INSERT INTO `{}` (`org_id`,`org_name`) 
+                    VALUES ('{}','{}')'''
+                    .format('org_list', info['org_id'], info['org_name']))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return  True
+    return False
+
+def update_user(admin, adminpass, user, op):
+    user_dic = get_user_dic()
+    if adminpass == user_dic[admin]:
+        conn = mysql.connector.connect(
+            host = SQLserver_host,
+            port = SQLserver_port,
+            user = sql_userid,
+            password = sql_userpass,
+            database = database_name,
+        )
+        cur = conn.cursor()
+        connected = conn.is_connected()        
+        if (not connected):
+            conn.ping(True)
+        
+        if op == 'stop':
+            i = -1
+        elif op == 'user':
+            i = 1
+        elif op == 'admin':
+            i = 0
+        elif op == 'coach':
+            i = 2
+        
+        sentence = '''UPDATE `user_list` SET `type` = {} WHERE `id` = '{}';
+                   '''.format(i, user)
+        #UPDATE `dehydration2`.`user_list` SET `type` = '0' WHERE `user_list`.`id` = 'tomohiro';
+        
+        cur.execute(sentence)
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        
+        return  'OK'
+    return 'NG'
+
 def sql_data_per_day(day):
     #user_name ←のアカウントを使って
     #user_nm ←のデータを取得
@@ -351,8 +464,9 @@ def sql_data_per_day(day):
     if (not connected):
         conn.ping(True)
     cur.execute('''SELECT `id`,`day`, `weather`, `humidity`, `training`,`time`,
-                    `bweight`,`aweight`,`water`,`temp` FROM `{}` WHERE day='{}' '''.format("data",day))
-    data_list=[]
+                    `bweight`,`aweight`,`water`,`temp` FROM `{}` WHERE day='{}';
+                '''.format("data",day))
+    data_list = []
     for row in cur.fetchall():
         data_list.append({'day'     :row[1],#日
                           'tenki'   :row[2],#天気
