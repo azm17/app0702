@@ -411,34 +411,36 @@ def admin_watch():# ユーザリスト　ユーザを選び -> admin_watch_show(
                                     sentence = sentence)
             return make_response(index)
         user_prof = my_func.sql_ALLuser_profile()
+        org_dic = my_func.get_org()
         
     except Exception as error:
         sentence = 'do not connect sql server by your username \
-                \n or making html error:\n{}'.format(error.__str__())
+                \n or occur making html error:\n{}'.format(error.__str__())
         index = render_template('error.html',
                                 sentence = sentence)
         resp = make_response(index)
     
-    
     posts = []; posts_admin = [] 
     posts_coach = []; posts_unusable = []
     
-    
     for name in user_prof.keys():
-        dic = {'name':user_prof[name]['rname'],
-                'org':user_prof[name]['org'],
-                'year':user_prof[name]['year'],
-                'id':name,
-                'keyword':str(user_prof[name]['year']) \
+        dic = {'name'     :user_prof[name]['rname'],
+                'org'     :org_dic[user_prof[name]['org']]['org_name'],
+                'year'    :user_prof[name]['year'],
+                'id'      :name,
+                'keyword' :str(user_prof[name]['year']) \
                      + user_prof[name]['org'] + name,
                }
-        if user_prof[admin]['type'] == 2 and dic['org'] == user_prof[admin]['org']:
+        if user_prof[admin]['type'] == 2 \
+            and dic['org'] == org_dic[user_prof[admin]['org']]['org_name']:
+            
             if user_prof[name]['type'] == 1:
                 posts.append(dic)
             elif user_prof[name]['type'] == 2:
                 posts_coach.append(dic)
             
         if user_prof[admin]['type'] == 0:
+            
             if user_prof[name]['type'] == 0:
                 posts_admin.append(dic)
             elif user_prof[name]['type'] == 1:
@@ -454,7 +456,9 @@ def admin_watch():# ユーザリスト　ユーザを選び -> admin_watch_show(
                        'year':'XXXX',
                        'id'  :'XXXX'}]; 
     
-    posts = reversed(sorted(posts, key=lambda x:x['keyword']))
+    posts = reversed(sorted(posts, 
+                            key = lambda x : x['keyword'])
+            )
     resp = make_response(render_template(
             'admin_watch.html',
             serverhost = server_address,
@@ -466,7 +470,7 @@ def admin_watch():# ユーザリスト　ユーザを選び -> admin_watch_show(
     return resp
 
 # 管理者用アプリwatchの内部機能 各ユーザの結果を見る
-@app.route("/admin/watch/show", methods = ["GET","POST"])
+@app.route("/admin/watch/show", methods = ["GET", "POST"])
 def admin_watch_show():
     admin = request.cookies.get('user')# クッキーを保存
     adminpass = request.cookies.get('pass')# クッキーを保存
@@ -490,7 +494,7 @@ def admin_watch_show():
         
         data = my_func.sql_data_get(uid_get)
         posts = []
-        for d in reversed(data):#dataは辞書形式
+        for d in reversed(data):# dataは辞書形式
             neccessary1_tmp \
                 = round(float(d['wb']*0.01) + float(d['moi']), 1)
             
@@ -502,7 +506,7 @@ def admin_watch_show():
                 shitsudo = ' '
             if int(temp) == 1111:
                 temp = ' '
-                
+            
             posts.append({
               'date'          :d['day'],#日
               'bweight'       :d['wb'],#運動前体重
@@ -518,11 +522,14 @@ def admin_watch_show():
               'w1'            :round(d['wb']*0.99,1),
               'necessary1'    :neccessary1_tmp
             })
+        
         index = render_template('admin_show.html',
                                 title = 'taberube.jp',
                                 user = real_name,
                                 posts = posts,
+                                userid = uid_get,
                                 serverhost = server_address)
+        
         resp = make_response(index)
         
         resp.set_cookie('user', admin)# クッキーの再設定
@@ -608,7 +615,8 @@ def admin_latest():
             return make_response(index)
 
 # 管理者用アプリRegister，新規ユーザー追加
-@app.route("/admin/register", methods=["GET", "POST"])
+@app.route("/admin/register",
+           methods = ["GET", "POST"])
 def admin_register():
     admin = request.cookies.get('user')
     adminpass = request.cookies.get('pass')
@@ -663,6 +671,7 @@ def admin_register():
         
         if len(request.form['newuser']) == 0 or len(request.form['newpass']) == 0 or \
             len(request.form['rname']) == 0 or len(request.form['org']) == 0:
+            
             sentence = 'ERROR : Fill in the blank!: すべての空欄を埋めてください。'
             index = render_template('error.html',
                                     sentence = sentence)
@@ -713,8 +722,8 @@ def admin_register():
     
     
     for p in org_dic.keys():
-        dic ={'org_id'  :p,
-              'org_name':org_dic[p]['org_name']}
+        dic = {'org_id'  :p,
+               'org_name':org_dic[p]['org_name']}
         
         posts_org.append(dic)
         
@@ -923,20 +932,26 @@ def admin_download():
     resp = make_response()
     
     file = request.args.get('file')
+    name = request.args.get('name')
     ## SQL####
-    hantei = my_func.sql_makecsv(file)
-    if hantei:
-        pass
-    else:
-        sentence = 'ERROR: CSVファイルを作成できません。'
-        return make_response(render_template('error.html',
-                                             sentence=sentence))
-    ## SQL####
+    try:
+        my_func.sql_makecsv(file, name)
+    except Exception as error:
+        sentence = 'ERROR: CSVファイルを作成できません。' \
+                        + error.__str__()
+        index = render_template('error.html', 
+                                sentence = sentence)
+        return make_response(index)
+    ######
     
     if file == 'data':
-        resp.data = open("./data.csv", "rb").read()
-        downloadFileName = 'data.csv'
-        
+        if name == None:
+            downloadFileName = "data_ALL.csv"
+        else:
+            downloadFileName = "data_{}.csv".format(name)
+            
+        resp.data = open(downloadFileName, "rb").read()
+    
     elif file == 'user':
         resp.data = open("./user_list.csv", "rb").read()
         downloadFileName = 'user.csv'

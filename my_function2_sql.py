@@ -482,7 +482,7 @@ def sql_data_per_day(day):
     
     return data_list
 
-def sql_makecsv(file):
+def sql_makecsv(file, name):
     data_list = []
     conn = mysql.connector.connect(
         host = SQLserver_host,
@@ -497,26 +497,38 @@ def sql_makecsv(file):
     if (not connected):
         conn.ping(True)
     if file == "data":
-        cur.execute('''SELECT `id`,`day`, `weather`, `humidity`, `training`,`time`,
-                        `bweight`,`aweight`,`water`,`temp`,`rtime` FROM `{}`'''.format("data"))
+        if name == None:
+            sentence = '''SELECT `id`,`day`, `weather`, `humidity`, `training`,`time`,
+                            `bweight`,`aweight`,`water`,`temp`,`rtime` FROM `{}`'''\
+                            .format("data")
+            filename = "data_ALL.csv"
+        else:
+            sentence = '''SELECT `id`,`day`, `weather`, `humidity`, `training`,`time`,
+                            `bweight`,`aweight`,`water`,`temp`,`rtime` FROM `{}` WHERE id='{}' ''' \
+                            .format("data", name)
+            filename = "data_{}.csv".format(name)
+        
+        cur.execute(sentence)
+        user_prof = sql_ALLuser_profile()
         for row in cur.fetchall():
-            data_list.append({'id'      :row[0],
+            data_list.append({'id'      :user_prof[row[0]]['rname'],
                               'day'     :row[1],#日
                               'weather' :row[2],#天気
-                              'humidity':row[3],
+                              'humidity':" " if row[3] == 1111 else row[3],
                               'training':row[4],#トレーニング内容
                               'time'    :row[5],#時間
                               'bweight' :row[6],#運動前体重
                               'aweight' :row[7],#運動後体重
                               'water'   :row[8],#飲水量
-                              'temp'    :row[9],
-                              'rtime'   :row[10]})#湿度
+                              'temp'    :" " if row[9] == 1111 else row[9]})
         cur.close()
         conn.close()
         
-        with open('data.csv', 'w', newline="") as csv_file:
-            fieldnames = ['id', 'day','weather','humidity','training','time','bweight','aweight','water','temp','rtime']
-            writer = csv.DictWriter(csv_file, fieldnames = fieldnames)
+        with open(filename, 'w', newline = "") as csv_file:
+            fieldnames = ['id', 'day', 'weather', 'humidity', 'training',
+                          'time', 'bweight', 'aweight', 'water', 'temp', 'rtime']
+            writer = csv.DictWriter(csv_file, 
+                                    fieldnames = fieldnames)
             writer.writeheader()
             for d in data_list:
                 writer.writerow(d)
