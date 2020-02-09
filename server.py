@@ -28,7 +28,6 @@ import matplotlib.pyplot as plt
 import os
 import glob
 
-
 app = Flask(__name__)
 # Server Host
 # server_host = '192.168.0.12'
@@ -49,7 +48,8 @@ tenki_dic = {'0':' ',
              '3':'🌧️',
              '4':'❄️',
              '5':'室内',
-             '13':'🌞️→🌧️'}
+             '13':'🌞️→🌧️',
+             '31':'🌧️→🌞️'}
 
 # send login form for general users
 @app.route("/")

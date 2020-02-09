@@ -524,7 +524,7 @@ def sql_makecsv(file, name):
         cur.close()
         conn.close()
         
-        with open(filename, 'w', newline = "") as csv_file:
+        with open(filename, 'w', newline = "", encoding='shift-jis' ) as csv_file:
             fieldnames = ['id', 'day', 'weather', 'humidity', 'training',
                           'time', 'bweight', 'aweight', 'water', 'temp', 'rtime']
             writer = csv.DictWriter(csv_file, 
@@ -547,7 +547,7 @@ def sql_makecsv(file, name):
                      })
 
         cur.close()
-        with open('user_list.csv', 'w', newline = "") as csv_file:
+        with open('user_list.csv', 'w', newline = "", encoding='shift-jis') as csv_file:
             fieldnames = ['id', 'password', 'type', 'rname', 'org', 'year']
             writer = csv.DictWriter(csv_file, fieldnames = fieldnames)
             writer.writeheader()
