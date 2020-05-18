@@ -27,11 +27,12 @@ import datetime
 import matplotlib.pyplot as plt
 import os
 import glob
-
+import numpy as np
 app = Flask(__name__)
 # Server Host
 # server_host = '192.168.0.12'
 server_host = '192.168.2.102'
+#server_host = 'localhost'
 # server_host = '192.168.56.1'
 # server_host = '192.168.0.6'
 # server_host = 'eiyo-kanri-hydration'
@@ -911,6 +912,37 @@ def admin_analysis():
     filename2 = datetime.datetime.now().strftime("%Y%m%d%H%M%S")\
                 +'scatter.png'
     plt.savefig('./static/img/analysis/'+filename2)
+    
+    plt.figure()
+ 
+    
+  
+    #回帰直線作成コード
+    a=data_list
+    new_list_a=[]
+    new_list_b=[]
+    for i in range(len(a)):
+        #print(i)
+        if a[i]!=-100:
+            new_list_a.append(a[i])
+            new_list_b.append(i)
+    x = np.array(new_list_b)
+    y = np.array(new_list_a)
+    z = np.polyfit(x, y, 1)
+    
+    p = np.poly1d(z)
+    p30 = np.poly1d(np.polyfit(x, y, 3))
+    xp = np.linspace(31, 0, 100)
+    
+    plt.plot(x, y, '.', xp, p(xp), '-', xp, p30(xp), '')
+    plt.ylim(-1.5,2)
+    #plt.show()
+    filename3 = datetime.datetime.now().strftime("%Y%m%d%H%M%S")\
+                +'regression.png'
+    plt.savefig('./static/img/analysis/'+filename2)
+
+    
+    
     
     return make_response(render_template('admin_analysis.html',
                                          fname=filename,
