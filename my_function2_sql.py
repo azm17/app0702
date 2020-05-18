@@ -13,11 +13,11 @@ import datetime
 import csv
 
 # SQLserver_host = '192.168.0.32'
-SQLserver_host = 'eiyo-kanri.taberube.jp'
+SQLserver_host = ''
 SQLserver_port = 3306
 database_name = 'dehydration2'
-sql_userid = 'mutsu624'
-sql_userpass = '624mutsu'
+sql_userid = ''
+sql_userpass = ''
 
 # すべてのユーザーのIDとパスを表示，my_function内のみ使用
 def get_user_dic():
